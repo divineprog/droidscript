@@ -1,9 +1,9 @@
 Copyright (c) 2009-2010 Mikael Kindborg mikael.kindborg@gmail.com
-Licence: MIT
+Source code license: MIT
 
 DroidScript - JavaScript for Android! :-)
 
-The project is very unfinished and experimental!
+The project is experimental!
 
 DroidScript (formerly called RhinoDroid) is a JavaScript programming tool for Android.
 It is a tool for building full Android applications.
@@ -14,29 +14,52 @@ called RhinoDroid).
 The DroidScript application allows both editing and running programs on a device, 
 and will add remote coding using a web application. The application contains a tiny 
 web server that accepts HTTP PUT-requests with JavaScript code as its body.
-But this is not yet complete.
 
-How To
+At http://droidscript.se there is a live editor you can use to interactively author
+and experiment with JavaScript on a device or on the emulator.
+
+Work that remains:
+- More stable error handling
+- Better on-the-device editing capabilities
+- Being able to save scripts on the device
+- Better support for browsing scripts
+- Support for implementing Java interfaces in JavaScript
+  (in Rhino this relies on byte code generation, which does
+  not yet work on Dalvik, meanwhile use Proxy)
+- Support for subclassing Java classes, will require byte code
+  generation for Dalvik
+- Write more blog posts with example code
+- Write a book on how to program Android using JavaScript
+
+How To Get Started
+
+The quick-start is to go to http://droidscript.se and download the app using the
+barcode at the bottom on the page using a barcode scanner application. Then follow
+instructions on the web page. 
+
+There is also a blog at http://droidscript.blogspot.com that has updates and posts
+related to DroidScript.
 
 On startup, the app reads a JavaScript file: 
-/sdcard/droidscript/DroidScript.js
+/sdcard/droidscript/DroidScriptApp.js
 
-If not present, this file, and the demo script Toast.js, are downloaded 
-from GitHub when the app starts.
+If not present, this file, the script DroidScriptServer.js and the demo script Toast.js, 
+are downloaded from GitHub when the app starts.
+
+How To Get Stared With Development
+
+Grab the project from GitHub.
+
+Import project into Eclipse (or use the editor/development tool of choice).
 
 Steps if using the emulator:
 1) Create an SD card image with: mksdcard 512M sdcard.iso
-2) Launch emulator with script: ./emulator.sh
+2) Launch emulator with the shell script: ./emulator.sh
 
-Copy DroidScript.js to device with script: ./copyjs.sh
-(This is only needed if you wish to modify the app.)
+Copy the app to the device/emulator with shell script: ./install.sh
 
-Import project into Eclipse, compile and run on emulator or device.
-If you don't want to compile, DroidScript.apk is on GitHub in bin folder.
-Install on device with: adb install -r DroidScript.apk
-
-Again, everything is very experimental and unfinished at this stage.
+Copy JavaScript files to device/emulator with shell script: ./copyjs.sh
 
 Have fun!
 
-Micke (^_^)
+Best regards, Mikael Kindborg (^_^)
