@@ -4,12 +4,11 @@
 // used. Like in the old Lisp days! 
 //
 // I have been thinking about changing the design to use JavaScript objects 
-// instead (similar to the massive jQuery closure). But it is kind of
-// refreshing to go with a really simple design. The way it works now is
-// that DroidScriptActivity (Java code) calls functions in this file for
-// various events in the program. There might be problems with "name space
-// pollution" if JavaScript libraries become common on DroidScript, so this
-// design may need to change.
+// instead. But it is kind of refreshing to go with a really simple design. 
+// The way it works now is that DroidScriptActivity (Java code) calls functions 
+// in this file for various events in the program. There might be problems with 
+// "name space pollution" if JavaScript libraries become common on DroidScript, 
+// so this design may need to change.
 //
 // TODO: Add better error handling.
 //
@@ -47,17 +46,19 @@ function onCreate(icicle)
         + 'var Widget = Packages.android.widget;\n'
         + 'var Gravity = Packages.android.view.Gravity;\n\n'
         + 'function onCreate(icicle) {\n'
-        + '    var text = "Apps are early bound.\\n"\n'
-        + '        + "The web is late bound.\\n"\n'
-        + '        + "Apps are updated infrequently.\\n"\n'
-        + '        + "The web updated frequently.\\n"\n'
-        + '        + "JavaScript for apps means dynamics.\\n";\n'
+        + '    var text = "Welcome to DroidScript - "\n'
+        + '        + "JavaScript on Android!\\n"\n'
+        + '        + "With a dynamic language like JavaScript "\n'
+        + '        + "applications can be authored interactively and "\n'
+        + '        + "also be updated dynamically. "\n'
+        + '        + "The vision is a web of linked applications, "\n'
+        + '        + "similar in spirit to HyperCard stacks.";\n'
         + '    var editor = new Widget.EditText(Activity);\n'
         + '    editor.setGravity(Gravity.TOP);\n'
         + '    editor.setText(text);\n'
         + '    Activity.setContentView(editor); }\n\n'
         + 'Widget.Toast.makeText(Activity,\n'
-        + '    "Hello World! Tamejfan!",\n'
+        + '    "Hello World",\n'
         + '    Widget.Toast.LENGTH_SHORT).show();\n'
         + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n';
     
@@ -218,6 +219,34 @@ function menuItemHasId(item, id)
 }
 
 //--------------------------------------------------------------------
+
+//
+//function button() {
+//    var n = 1;
+//    var Graphics = Packages.android.graphics;
+//    var font = Graphics.Typeface.create(
+//        Graphics.Typeface.SANS_SERIF,
+//        Graphics.Typeface.BOLD);
+//    var button = new Packages.android.widget.Button(Activity);
+//    button.setTypeface(font);
+//    button.setTextSize(26);
+//    button.setBackgroundColor(Graphics.Color.rgb(0, 0, 64));
+//    button.setTextColor(Graphics.Color.rgb(255, 255, 255));
+//    button.setText("How many times can you click me?");
+//    button.setOnClickListener(function () {
+//        button.setText("You clicked me " + n + " times!");
+//        n = n + 1;
+//    });
+//    return button;
+//}
+//
+//var layout = new Packages.android.widget.LinearLayout(Activity);
+//layout.setOrientation(Widget.LinearLayout.VERTICAL);
+//layout.addView(button());
+//layout.addView(button());
+//layout.addView(button());
+//Activity.setContentView(layout);
+
 // The following is a bunch of comments I keep around, may not make sense to you.
 
 // "Satsa på onlineteknolgi istället för offlineteknologi" Göran on byggverktyg 20100201
