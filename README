@@ -18,9 +18,12 @@ web server that accepts HTTP PUT-requests with JavaScript code as its body.
 At http://droidscript.se there is a live editor you can use to interactively author
 and experiment with JavaScript on a device or on the emulator.
 
-Work that remains:
+To-do list:
 - More stable error handling
-- Better on-the-device editing capabilities
+- Better on-the-device editing capabilities (text editor with
+  more traditional text selection & copy/paste, plus fixing
+  the scroll thumb so that it displays properly; virtual keyboard
+  also needs fixing so that it doesn't overlap the edit view)
 - Being able to save scripts on the device
 - Better support for browsing scripts
 - Support for implementing Java interfaces in JavaScript
@@ -61,5 +64,8 @@ Copy the app to the device/emulator with shell script: ./install.sh
 Copy JavaScript files to device/emulator with shell script: ./copyjs.sh
 
 Have fun!
+
+Big thanks to the Mozilla Rhino developers, Brice Lambson for putting Rhino
+on Android, and to Marijn Haverbeke, developer of the CodeMirror editor.
 
 Best regards, Mikael Kindborg (^_^)
