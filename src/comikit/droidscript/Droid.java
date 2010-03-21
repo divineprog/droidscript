@@ -1,16 +1,7 @@
 package comikit.droidscript;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.widget.TextView;
 
 /**
  * Central place to store info.
@@ -24,32 +15,7 @@ import android.widget.TextView;
  */
 public class Droid
 {
-    public static MessageLog Log = new MessageLog();
     public static LanguageDictionary Dictionary = new LanguageDictionary();
-    
-    public static void log(String message)
-    {
-        Log.add(message);
-    }
-    
-    public static void showMessages(Activity activity)
-    {
-        TextView view = new TextView(activity);
-        view.setText(Log.getMessagesAsString());
-        AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
-        dialog.setTitle(Droid.translate("MESSAGES"));
-        dialog.setView(view);
-        dialog.setPositiveButton(
-            Droid.translate("CLOSE"), 
-            new DialogInterface.OnClickListener()
-            {
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    // Should just close the dialog?
-                }
-            });
-        dialog.show();
-    }
     
     public static String translate(String key)
     {
@@ -130,52 +96,6 @@ public class Droid
             {
                 dictionary.get(languageCode).put(keyValuePairs[i], keyValuePairs[i + 1]);
             }
-        }
-    }
-    
-    /**
-     * List of log entries.
-     */
-    public static class MessageLog
-    {
-        Collection<String> entries = new ConcurrentLinkedQueue<String>();
-        
-        public Collection<String> getMessages()
-        {
-            return entries;
-        }
-        
-        public String getMessagesAsString()
-        {
-            if (0 == entries.size()) 
-            {
-                return Droid.translate("NO_MESSAGES_TO_DISPLAY");
-            }
-            
-            String messages = "";
-            
-            for (String s : getMessages())
-            {
-                messages = s + "\n" + messages;
-            }
-            
-            return messages;
-        }
-        
-        public int getNumberOfMessages()
-        {
-            return entries.size();
-        }
-        
-        public void add(String message)
-        {
-            android.util.Log.i("DroidScript", "Adding message: " + message);
-            entries.add(message);
-        }
-        
-        public void clear()
-        {
-            entries.clear();
         }
     }
 }

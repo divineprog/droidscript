@@ -34,8 +34,7 @@ public class DroidScriptApp extends DroidScriptActivity
     public String[][] applicationFiles() 
     {
         String urlBase = "http://github.com/divineprog/droidscript/raw/master/";
-        return 
-        new String[][]
+        return new String[][]
         {
             { "droidscript/DroidScriptApp.js", urlBase + "javascript/DroidScriptApp.js" },
             { "droidscript/DroidScriptServer.js", urlBase + "javascript/DroidScriptServer.js" },
@@ -71,7 +70,7 @@ public class DroidScriptApp extends DroidScriptActivity
         } 
         catch (Exception e)
         {
-            Droid.log("Error in installApplicationFiles: " + e.toString());
+            logMessage("Error in installApplicationFiles: " + e.toString());
             e.printStackTrace();
         }
     }
@@ -92,7 +91,7 @@ public class DroidScriptApp extends DroidScriptActivity
         } 
         catch (Exception e)
         {
-            Droid.log("Error in updateApplicationFiles: " + e.toString());
+            logMessage("Error in updateApplicationFiles: " + e.toString());
             e.printStackTrace();
         }
     }

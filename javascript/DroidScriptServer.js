@@ -76,13 +76,13 @@ function onPrepareOptionsMenu(menu)
 
 function onOptionsItemSelected(item)
 {
-    if (menuItemHasId(item, 10)) { Droid.showMessages(Activity); }
+    if (menuItemHasId(item, 10)) { Activity.showMessages(); }
     else
     if (menuItemHasId(item, 11)) { stopServer(); }
     else
     if (menuItemHasId(item, 12)) { startServer(); }
     else
-    if (menuItemHasId(item, 13)) { Droid.Log.clear(); Activity.finish(); }
+    if (menuItemHasId(item, 13)) { stopServer(); Activity.finish(); }
 
     return true;
 }

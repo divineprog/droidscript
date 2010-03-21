@@ -1,5 +1,7 @@
 package comikit.droidscript;
 
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.mozilla.javascript.Context;
@@ -10,6 +12,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +20,7 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 /**
  * Activity that has a JavaScript interpreter.
@@ -36,6 +40,7 @@ public class DroidScriptActivity extends Activity
 {
     Interpreter interpreter;
     String scriptFileName;
+    MessageLog messages = new MessageLog();
     
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -67,9 +72,9 @@ public class DroidScriptActivity extends Activity
         
         // We should not have any errors at this point.
         // Check the log and display errors if there are any.
-        if (0 < Droid.Log.getNumberOfMessages()) 
+        if (0 < messages.getNumberOfMessages()) 
         {
-            Droid.showMessages(this);
+            showMessages();
         }
     }
     
@@ -186,7 +191,7 @@ public class DroidScriptActivity extends Activity
         catch (Throwable e) 
         {
             e.printStackTrace();
-            Droid.log("Error in openApplicationFile: " + e.toString());
+            logMessage("Error in openApplicationFile: " + e.toString());
             return e;
         }
     }
@@ -202,7 +207,7 @@ public class DroidScriptActivity extends Activity
         catch (Throwable e) 
         {
             e.printStackTrace();
-            Droid.log("Error in openApplicationFile: " + e.toString());
+            logMessage("Error in openApplicationFile: " + e.toString());
             return e;
         }
     }
@@ -224,7 +229,7 @@ public class DroidScriptActivity extends Activity
                 {
                     e.printStackTrace();
                     Log.i("DroidScript", "Error in eval: " + e.toString());
-                    Droid.log("Error in eval: " + e.toString());
+                    logMessage("Error in eval: " + e.toString());
                     result.set(e);
                 }
             }
@@ -252,7 +257,7 @@ public class DroidScriptActivity extends Activity
         catch (EcmaError error)
         {
             error.printStackTrace();
-            Droid.log("Error in callJsFunction: " + error.toString());
+            logMessage("Error in callJsFunction: " + error.toString());
             Log.i("JavaScript", "Error on line: " + error.lineNumber() + ": " + error.getLineSource());
             return null;
         }
@@ -288,7 +293,37 @@ public class DroidScriptActivity extends Activity
             }
         }
     }
-        
+    
+    public void logMessage(String errorMessage) 
+    {
+        messages.add(errorMessage);
+    }
+    
+    public void clearMessages() 
+    {
+        messages.clear();
+    }
+    
+    public void showMessages()
+    {
+        TextView view = new TextView(this);
+        view.setText(messages.getMessagesAsString());
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(Droid.translate("MESSAGES"));
+        dialog.setView(view);
+        dialog.setPositiveButton(
+            Droid.translate("CLOSE"), 
+            new DialogInterface.OnClickListener()
+            {
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    // Here we clear all messages.
+                    clearMessages();
+                }
+            });
+        dialog.show();
+    }
+    
     public static class Interpreter
     {
         Context cx;
@@ -340,6 +375,52 @@ public class DroidScriptActivity extends Activity
                 Log.i("DroidScript", "Could not find JsFun " + funName);
                 return null;
             }
+        }
+    }
+    
+    /**
+     * List of log entries.
+     */
+    public static class MessageLog
+    {
+        Collection<String> entries = new ConcurrentLinkedQueue<String>();
+        
+        public Collection<String> getMessages()
+        {
+            return entries;
+        }
+        
+        public String getMessagesAsString()
+        {
+            if (0 == entries.size()) 
+            {
+                return Droid.translate("NO_MESSAGES_TO_DISPLAY");
+            }
+            
+            String messages = "";
+            
+            for (String s : getMessages())
+            {
+                messages = s + "\n" + messages;
+            }
+            
+            return messages;
+        }
+        
+        public int getNumberOfMessages()
+        {
+            return entries.size();
+        }
+        
+        public void add(String message)
+        {
+            android.util.Log.i("DroidScript", "Adding message: " + message);
+            entries.add(message);
+        }
+        
+        public void clear()
+        {
+            entries.clear();
         }
     }
 }

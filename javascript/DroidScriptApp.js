@@ -146,11 +146,11 @@ function onOptionsItemSelected(item)
     else 
     if (menuItemHasId(item, 11)) { openServer(); }
     else
-    if (menuItemHasId(item, 12)) { Droid.showMessages(Activity); }
+    if (menuItemHasId(item, 12)) { Activity.showMessages(); }
     else
     if (menuItemHasId(item, 13)) { updateApplicationScripts(); }
     else
-    if (menuItemHasId(item, 14)) { Droid.Log.clear(); Activity.finish(); }
+    if (menuItemHasId(item, 14)) { Activity.finish(); }
     
     return true;
 }
