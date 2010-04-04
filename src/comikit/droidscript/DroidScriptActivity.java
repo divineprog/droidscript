@@ -4,14 +4,21 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.EcmaError;
+import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.ErrorReporter;
 import org.mozilla.javascript.Function;
+import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
+import android.R;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -38,6 +45,8 @@ import android.widget.TextView;
  */
 public class DroidScriptActivity extends Activity 
 {
+    static DroidScriptContextFactory contextFactory;
+    
     Interpreter interpreter;
     String scriptFileName;
     MessageLog messages = new MessageLog();
@@ -124,9 +133,7 @@ public class DroidScriptActivity extends Activity
     public Object onRetainNonConfigurationInstance()
     {
         // TODO: We will need to somehow also allow JS to save
-        // data and rebuild the UI. Perhaps record and replay
-        // JavaScript statements? Rather than saving the 
-        // interpreter state?!
+        // data and rebuild the UI.
         return interpreter;
     }
     
@@ -167,6 +174,8 @@ public class DroidScriptActivity extends Activity
          return true;
     }
     
+    // TODO: Add more "onXXX" methods to make them available to JS.
+    
     public void setScriptFileName(String fileName)
     {
         scriptFileName = fileName;
@@ -185,30 +194,36 @@ public class DroidScriptActivity extends Activity
     {
         try 
         {
-            String code = DroidScriptFileHandler.create().readStringFromApplicationFile(this, filename);
-            return eval(code);
-        } 
+            return eval(DroidScriptFileHandler.create().readStringFromApplicationFile(this, filename));
+        }
         catch (Throwable e) 
         {
             e.printStackTrace();
-            logMessage("Error in openApplicationFile: " + e.toString());
-            return e;
+            String errorMessage = "OP" + e.toString();
+            Log.i("DroidScript", errorMessage);
+            logMessage(errorMessage);
+            showMessages();
+            return null;
         }
     }
     
     /**
      * Run a script on the SD card or at an url.
      */
-    public Object openFileOrUrl(final String filenameOrUrl)  {
-        try 
+    public Object openFileOrUrl(final String filenameOrUrl)  
+    {
+        try
         {
             return eval(DroidScriptFileHandler.create().readStringFromFileOrUrl(filenameOrUrl));
-        } 
-        catch (Throwable e) 
+        }
+        catch (Throwable e)
         {
             e.printStackTrace();
-            logMessage("Error in openApplicationFile: " + e.toString());
-            return e;
+            String errorMessage = "OP" + e.toString();
+            Log.i("DroidScript", errorMessage);
+            logMessage(errorMessage);
+            showMessages();
+            return null;
         }
     }
 
@@ -225,11 +240,29 @@ public class DroidScriptActivity extends Activity
                     //cx = ContextFactory.getGlobal().enterContext(cx);
                     result.set(interpreter.eval(code));
                 }
+//                catch (RhinoException error)
+//                {
+//                    error.printStackTrace();
+//                    String errorMessage = 
+//                        "E1 " 
+//                        + "(" + error.columnNumber() + "): " 
+//                        + error.getMessage()
+//                        + " " + error.sourceName() 
+//                        + " " + error.lineNumber() 
+//                        + error.lineSource();
+//                    Log.i("DroidScript", errorMessage);
+//                    logMessage(errorMessage);
+//                    showMessages();
+//                    result.set(error);
+//                }
                 catch (Throwable e)
                 {
-                    e.printStackTrace();
-                    Log.i("DroidScript", "Error in eval: " + e.toString());
-                    logMessage("Error in eval: " + e.toString());
+                    handleJavaScriptError(e);
+//                    e.printStackTrace();
+//                    String errorMessage = "E2 " + e.toString();
+//                    Log.i("DroidScript", errorMessage);
+//                    logMessage(errorMessage);
+//                    showMessages();
                     result.set(e);
                 }
             }
@@ -248,50 +281,68 @@ public class DroidScriptActivity extends Activity
      * called in the UI-thread. 
      * TODO: Make interpreter less thread sensitive.
      */
-    public Object callJsFunction(String funName, Object... args)
+    Object callJsFunction(String funName, Object... args)
     {
         try 
         {
             return interpreter.callJsFunction(funName, args);
         }
-        catch (EcmaError error)
-        {
-            error.printStackTrace();
-            logMessage("Error in callJsFunction: " + error.toString());
-            Log.i("JavaScript", "Error on line: " + error.lineNumber() + ": " + error.getLineSource());
-            return null;
-        }
+//        catch (RhinoException error)
+//        {
+//            error.printStackTrace();
+//            String errorMessage = 
+//                "C1 " 
+//                + "(" + error.columnNumber() + "): " 
+//                + error.getMessage()
+//                + " " + error.sourceName() 
+//                + " " + error.lineNumber() 
+//                + error.lineSource();
+//            Log.i("DroidScript", errorMessage);
+//            logMessage(errorMessage);
+//            showMessages();
+//            return null;
+//        }
         catch (Throwable e)
         {
-            e.printStackTrace();
+            handleJavaScriptError(e);
+//            e.printStackTrace();
+//            String errorMessage = "C2 " + e.toString();
+//            Log.i("DroidScript", errorMessage);
+//            logMessage(errorMessage);
+//            showMessages();
             return null;
         }
     }
 
-    void reportEvalError(Throwable e)
-    {
-        new AlertDialog.Builder(this)
-            .setTitle("JavaScript eval error")
-            .setMessage(e.toString())
-            .setNeutralButton("Close", null)
-            .show();
-    }
-    
     void createInterpreter()
     {
+        // Initialize global context factory with our custom factory.
+        if (null == contextFactory) 
+        {
+            contextFactory = new DroidScriptContextFactory();
+            ContextFactory.initGlobal(contextFactory);
+            Log.i("DroidScript", "Creating ContextFactory");
+        }
+        
+        contextFactory.setActivity(this);
+                
         if (null == interpreter) 
         {
+            // Get the interpreter, if previously created.
             Object obj = getLastNonConfigurationInstance();
-            if (null != obj)
+            if (null == obj)
             {
-                interpreter = (Interpreter) obj;
-                interpreter.setActivity(this);
+                // Create interpreter.
+                interpreter = new Interpreter();
             }
             else
             {
-                interpreter = new Interpreter().setActivity(this);
+                // Restore interpreter state.
+                interpreter = (Interpreter) obj;
             }
         }
+        
+        interpreter.setActivity(this);
     }
     
     public void logMessage(String errorMessage) 
@@ -324,28 +375,81 @@ public class DroidScriptActivity extends Activity
         dialog.show();
     }
     
-    public static class Interpreter
+    public void handleJavaScriptError(Throwable e)
     {
-        Context cx;
+        // Create error message.
+        String message = "";
+        if (e instanceof RhinoException)
+        {
+            RhinoException error = (RhinoException) e;
+            message = 
+                error.getMessage()
+                + " " + error.lineNumber() 
+                + " (" + error.columnNumber() + "): " 
+                + (error.sourceName() != null ? " " + error.sourceName() : "")
+                + (error.lineSource() != null ? " " + error.lineSource() : "")
+                + "\n" + error.getScriptStackTrace();
+        }
+        else
+        {
+            message = e.toString();
+        }
+        
+        // Create a notification. This is insanely complex! Android API designers
+        // seem to follow the Java tradition of making simple cases complex.
+        NotificationManager notificationManager = 
+            (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Notification notification = new Notification(
+            R.drawable.stat_notify_error, 
+            "JavaScript Error", 
+            System.currentTimeMillis());
+        Intent intent = new Intent(this, DroidScriptNotification.class);
+        intent.putExtra("NotificationMessage", "JavaScript Error: " + message);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
+        PendingIntent contentIntent = PendingIntent.getActivity(
+            this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        notification.setLatestEventInfo(
+            getApplicationContext(), 
+            "JavaScript Alert", 
+            message, 
+            contentIntent);
+        notification.defaults |= Notification.DEFAULT_LIGHTS;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(4042, notification);
+        
+        // Log the error message.
+        Log.i("DroidScript", "JavaScript Error: " + message);
+        e.printStackTrace();
+    }
+    
+    protected static class Interpreter
+    {
+        Context context;
         Scriptable scope;
         
         public Interpreter()
         {
             // Creates and enters a Context. The Context stores information
             // about the execution environment of a script.
-            cx = Context.enter();
-            cx.setOptimizationLevel(-1);
+            context = Context.enter();
+            context.setOptimizationLevel(-1);
             
             // Initialize the standard objects (Object, Function, etc.)
             // This must be done before scripts can be executed. Returns
             // a scope object that we use in later calls.
-            scope = cx.initStandardObjects();
+            scope = context.initStandardObjects();
         }
         
         public Interpreter setActivity(Activity activity)
         {
             // Set the global JavaScript variable Activity.
             ScriptableObject.putProperty(scope, "Activity", Context.javaToJS(activity, scope));
+            return this;
+        }
+        
+        public Interpreter setErrorReporter(ErrorReporter reporter)
+        {
+            context.setErrorReporter(reporter);
             return this;
         }
         
@@ -356,8 +460,8 @@ public class DroidScriptActivity extends Activity
 
         public Object eval(final String code) throws Throwable
         {
-            //ContextFactory.enterContext(cx);
-            return cx.evaluateString(scope, code, "eval:", 1, null);
+            //ContextFactory.enterContext(context);
+            return context.evaluateString(scope, code, "eval:", 1, null);
         }
         
         public Object callJsFunction(String funName, Object... args) throws Throwable
@@ -367,7 +471,7 @@ public class DroidScriptActivity extends Activity
             {
                 Log.i("DroidScript", "Calling JsFun " + funName);
                 Function f = (Function) fun;
-                Object result = f.call(cx, scope, scope, args);
+                Object result = f.call(context, scope, scope, args);
                 return Context.toString(result);
             }
             else
@@ -377,6 +481,32 @@ public class DroidScriptActivity extends Activity
             }
         }
     }
+    
+    public static class DroidScriptContextFactory extends ContextFactory
+    {
+        DroidScriptActivity activity;
+        
+        public DroidScriptContextFactory setActivity(DroidScriptActivity activity)
+        {
+            this.activity = activity;
+            return this;
+        }
+        
+        @Override
+        protected Object doTopCall(Callable callable, Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
+        {
+            try 
+            {
+                return super.doTopCall(callable, cx, scope, thisObj, args);
+            }
+            catch (Throwable e)
+            {
+                Log.i("DroidScript", "ContextFactory catched error: " + e);
+                if (null != activity) { activity.handleJavaScriptError(e); }
+                return false;
+            }
+        }
+     }
     
     /**
      * List of log entries.
@@ -424,3 +554,56 @@ public class DroidScriptActivity extends Activity
         }
     }
 }
+
+                // Just an experiment, using a custom ContextFactory instead.
+//                interpreter.setErrorReporter(new ErrorReporter() {
+//                    public void error(String message, String sourceName, int line, String lineSource, int lineOffset) {
+//                        String errorMessage = 
+//                            "ER" + message 
+//                            + " " + sourceName 
+//                            + " " + line 
+//                            + "(" + lineOffset + "): " 
+//                            + lineSource;
+//                        Log.i("DroidScript", errorMessage);
+//                        logMessage(errorMessage);
+//                        showMessages(); 
+//                    }
+//                    
+//                    public EvaluatorException runtimeError(String message, String sourceName, int line, String lineSource, int lineOffset) {
+//                        
+//                        String errorMessage = 
+//                            "RE" + message 
+//                            + " " + sourceName 
+//                            + " " + line 
+//                            + "(" + lineOffset + "): " 
+//                            + lineSource;
+//                        Log.i("DroidScript", errorMessage);
+//                        logMessage(errorMessage);
+//                        showMessages();
+//                        
+//                        return new EvaluatorException(message, sourceName, line, lineSource, lineOffset);
+//                    }
+//                    
+//                    public void warning(String message, String sourceName, int line, String lineSource, int lineOffset) {
+//                        String warningMessage = 
+//                            "WA" + message 
+//                            + " " + sourceName 
+//                            + " " + line 
+//                            + "(" + lineOffset + "): " 
+//                            + lineSource;
+//                        Log.i("DroidScript", warningMessage);
+//                        logMessage(warningMessage);
+//                        showMessages();
+//                    }
+//                });
+
+
+//    void reportEvalError(Throwable e)
+//    {
+//        new AlertDialog.Builder(this)
+//            .setTitle("JavaScript eval error")
+//            .setMessage(e.toString())
+//            .setNeutralButton("Close", null)
+//            .show();
+//    }
+    

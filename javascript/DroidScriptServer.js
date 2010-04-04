@@ -33,6 +33,7 @@ function onCreate(icicle)
 {
     var view = new Widget.TextView(Activity);
     view.setGravity(Gravity.TOP);
+    view.setTextSize(20);
     view.setText(
         "Welcome to the DroidScript Live Server!\n"
         + "IP-address:\n"
