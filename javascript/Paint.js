@@ -130,7 +130,7 @@ function SketchMorph()
         
         function paintingName() {
             var date = new Date();
-            return "DroidScriptPaiting" 
+            return "DroidScriptPainting" 
                 + date.getFullYear() 
                 + pad(date.getMonth() + 1)
                 + pad(date.getDate())
@@ -138,6 +138,7 @@ function SketchMorph()
                 + pad(date.getMinutes())
                 + pad(date.getSeconds()); }
         
+        // Image name does not seem to be used in gallery?
         result = MediaStore.Images.Media.insertImage(
             Activity.getContentResolver(),
             bitmap,
