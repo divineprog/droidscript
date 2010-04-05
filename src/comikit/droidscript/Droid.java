@@ -56,9 +56,11 @@ public class Droid
                  "MESSAGES", "Messages",
                  "NO_MESSAGES_TO_DISPLAY", "No messages to display",
                  "EVALUATE", "Evaluate",
-                 "RUN_AS_ACTIVITY", "Run as Activity",
+                 "RUN", "Run",
+                 "RUN_AS_ACTIVITY", "Run Activity",
                  "OPEN_SCRIPT", "Open script",
                  "START_SERVER", "Start server",
+                 "STOP_SERVER", "Stop server",
                  "SHOW_MESSAGES", "Messages",
                  "UPDATE_APP_SCRIPTS", "Update",
                  "THIS_WILL_OVERWRITE_ALL_APP_SCRIPTS", "This will overwrite all application scripts!",
@@ -66,7 +68,9 @@ public class Droid
                  "UPDATE_APP_SCRIPTS_DONE", "Update complete!",
                  "UPDATE_APP_SCRIPTS_DONE_RESTART", "Restart the application to make changes take effect",
                  "QUIT_APP", "Quit",
-                 "BE_KIND", "Be a kind person"
+                 "CLOSE", "Close",
+                 "BE_KIND", "Be kind",
+                 "BE_KIND_MESSAGE", "Be a kind person"
              );
         }
         

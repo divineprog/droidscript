@@ -72,7 +72,7 @@ public class DroidScriptActivity extends Activity
             else
             if (null != script) 
             {   
-                eval(script);
+                eval(script, filenameOrUrl);
             }
         }
         
@@ -190,11 +190,13 @@ public class DroidScriptActivity extends Activity
      * Run a script in the application directory. Less useful since the user 
      * has no access to this area, better to use the SD card.
      */
-    public Object openApplicationFile(final String filename)
+    public Object openApplicationFile(final String fileName)
     {
         try 
         {
-            return eval(DroidScriptFileHandler.create().readStringFromApplicationFile(this, filename));
+            return eval(
+                DroidScriptFileHandler.create().readStringFromApplicationFile(this, fileName), 
+                fileName);
         }
         catch (Throwable e) 
         {
@@ -214,7 +216,9 @@ public class DroidScriptActivity extends Activity
     {
         try
         {
-            return eval(DroidScriptFileHandler.create().readStringFromFileOrUrl(filenameOrUrl));
+            return eval(
+                DroidScriptFileHandler.create().readStringFromFileOrUrl(filenameOrUrl), 
+                filenameOrUrl);
         }
         catch (Throwable e)
         {
@@ -229,6 +233,11 @@ public class DroidScriptActivity extends Activity
 
     public Object eval(final String code)
     {
+        return eval(code, "");
+    }
+    
+    public Object eval(final String code, final String sourceName)
+    {
         final AtomicReference<Object> result = new AtomicReference<Object>(null);
         
         runOnUiThread(new Runnable() 
@@ -238,7 +247,7 @@ public class DroidScriptActivity extends Activity
                 try 
                 {
                     //cx = ContextFactory.getGlobal().enterContext(cx);
-                    result.set(interpreter.eval(code));
+                    result.set(interpreter.eval(code, sourceName));
                 }
 //                catch (RhinoException error)
 //                {
@@ -310,7 +319,7 @@ public class DroidScriptActivity extends Activity
 //            Log.i("DroidScript", errorMessage);
 //            logMessage(errorMessage);
 //            showMessages();
-            return null;
+            return false;
         }
     }
 
@@ -396,7 +405,7 @@ public class DroidScriptActivity extends Activity
         }
         
         // Create a notification. This is insanely complex! Android API designers
-        // seem to follow the Java tradition of making simple cases complex.
+        // seem to follow the Java tradition of making simple things complex.
         NotificationManager notificationManager = 
             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Notification notification = new Notification(
@@ -404,7 +413,7 @@ public class DroidScriptActivity extends Activity
             "JavaScript Error", 
             System.currentTimeMillis());
         Intent intent = new Intent(this, DroidScriptNotification.class);
-        intent.putExtra("NotificationMessage", "JavaScript Error: " + message);
+        intent.putExtra("NotificationMessage", "JavaScript Error:\n" + message);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
         PendingIntent contentIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -458,10 +467,10 @@ public class DroidScriptActivity extends Activity
             Context.exit();
         }
 
-        public Object eval(final String code) throws Throwable
+        public Object eval(final String code, final String sourceName) throws Throwable
         {
             //ContextFactory.enterContext(context);
-            return context.evaluateString(scope, code, "eval:", 1, null);
+            return context.evaluateString(scope, code, sourceName, 1, null);
         }
         
         public Object callJsFunction(String funName, Object... args) throws Throwable
@@ -503,7 +512,7 @@ public class DroidScriptActivity extends Activity
             {
                 Log.i("DroidScript", "ContextFactory catched error: " + e);
                 if (null != activity) { activity.handleJavaScriptError(e); }
-                return false;
+                return e;
             }
         }
      }

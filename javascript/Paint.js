@@ -1,167 +1,217 @@
-
-//var Morph = from("comikit.droidscript");
 //
-//var Morph = Packages.comikit.droidscript.Morph;
+// JavaScript paint sample program.
 //
-//var common = require("common.js");
-//var classes = require("classes.js");
+// @author Mikael Kindborg
+// Email: mikael.kindborg@gmail.com
+// Blog: divineprogrammer@blogspot.com
+// Twitter: @divineprog
+// Copyright (c) Mikael Kindborg 2010
+// Source code license: MIT
+//
 
+// Java classes
+
+var MotionEvent = Packages.android.view.MotionEvent;
+var Paint = Packages.android.graphics.Paint;
+var Color = Packages.android.graphics.Color;
+var RectF = Packages.android.graphics.RectF;
+var Point = Packages.android.graphics.Point;
+var Bitmap = Packages.android.graphics.Bitmap;
+var Canvas = Packages.android.graphics.Canvas;
+var Menu = Packages.android.view.Menu;
+var Toast = Packages.android.widget.Toast;
+var MediaStore = Packages.android.provider.MediaStore;
+var Morph = Packages.comikit.droidscript.Morph;
+var DroidScriptFileHandler = Packages.comikit.droidscript.DroidScriptFileHandler;
+    
+// Global variables
+
+var Sketch;
+var OptionsMenuItems;
+
+// Application entry point
 
 function onCreate(bundle)
 {
-    var morph = SketchMorph();
-    Activity.setContentView(morph);
+    Sketch = SketchMorph();
+    Activity.setContentView(Sketch.theMorph);
 }
+
+// SketchMorph "constructor"
 
 function SketchMorph()
 {
-    // Java classes
-    var MotionEvent = Packages.android.view.MotionEvent;
-    var Paint = Packages.android.graphics.Paint;
-    var Color = Packages.android.graphics.Color;
-    var RectF = Packages.android.graphics.RectF;
-    var Point = Packages.android.graphics.Point;
-    var Morph = Packages.comikit.droidscript.Morph;
+    // Local variables ("private instance variables")
     
-    // Instance variables
-    var color = Color.WHITE;
+    var brushRadius = 10;
+    var brushColor = Color.BLACK;
     var morph = new Morph(Activity);
+    var bitmap = null;
+    var canvas = null;
+    var lastPoint = null;
+    var artisticMode = false;
     
     // Event handlers
     
-    morph.setDrawHandler(function(canvas)
+    morph.setOnDrawListener(function(canvas)
     { 
-        paint = new Paint();
-        paint.setColor(color);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setAntiAlias(true);
-        canvas.drawOval(
-            new RectF(0, 0, 400, 400), 
-            paint);
+        canvas.drawBitmap(bitmap, 0, 0, null);
     });
     
-//    morph.setMeasureHandler(function(widthMeasureSpec, heightMeasureSpec)
-//    {
-//        return new Point(400, 400);
-//    });
-//    
-//    morph.setSizeChangedHandler(function(w, h, oldw, oldh)
-//    {
-//    });
+    morph.setOnSizeChangedListener(function(w, h, oldw, oldh)
+    {
+        // Create bitmap filled with white color.
+        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(bitmap);
+        paint = new Paint();
+        paint.setARGB(255, 255, 255, 255);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawPaint(paint);
+        morph.invalidate();
+    });
     
     morph.setOnTouchListener(function(view, event)
     {
         var action = event.getAction();
+        var x = event.getX();
+        var y = event.getY();
         if (action == MotionEvent.ACTION_DOWN)
         {
-            color = Color.BLUE;
-            view.invalidate();
-        }
-        
-        if (action == MotionEvent.ACTION_UP)
-        {
-            color = Color.WHITE;
+            paintDot(x, y);
+            lastPoint = new Point(x, y);
             view.invalidate();
         }
         
         if (action == MotionEvent.ACTION_MOVE)
         {
-            color = Color.RED;
+            paintStroke(lastPoint.x, lastPoint.y, x, y);
+            if (!artisticMode) { lastPoint = new Point(x, y); }
             view.invalidate();
         }
         
         return true;
     });
     
-    return morph;
+    // Local functions ("private methods")
+
+    function paintDot(x, y)
+    {
+        // Random colour in artistic mode
+        if (artisticMode) {
+            function random255() { return Math.random() * 255; }
+            brushColor = Color.rgb(random255(), random255(), random255()); }
+        var paint = new Paint();
+        paint.setColor(brushColor);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setAntiAlias(true);
+        canvas.drawOval(
+            new RectF(
+                x - brushRadius, 
+                y - brushRadius, 
+                x + brushRadius, 
+                y + brushRadius), 
+            paint);
+    }
+
+    function paintStroke(x1, y1, x2, y2)
+    {
+        var paint = new Paint();
+        paint.setColor(brushColor);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setAntiAlias(true);
+        paint.setStrokeWidth(brushRadius * 2);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        canvas.drawLine(x1, y1, x2, y2, paint);
+    }
+    
+    function savePainting()
+    {
+        function pad(n) { return n < 10 ? "0" + n : "" + n; }
+        
+        function paintingName() {
+            var date = new Date();
+            return "DroidScriptPaiting" 
+                + date.getFullYear() 
+                + pad(date.getMonth() + 1)
+                + pad(date.getDate())
+                + pad(date.getHours())
+                + pad(date.getMinutes())
+                + pad(date.getSeconds()); }
+        
+        result = MediaStore.Images.Media.insertImage(
+            Activity.getContentResolver(),
+            bitmap,
+            paintingName(),
+            paintingName());
+        
+        if (!result) {
+            showToast("Could not save painting"); }
+        else {
+            showToast("Paiting saved in media gallery"); }
+        
+//        try {
+//            out = DroidScriptFileHandler.create().openExternalStorageFileOutputStream(filename()));
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 90, out); } 
+//        catch (error) {
+//            showToast("Could not save image"); }
+    }
+
+    function showToast(message)
+    {
+        Toast.makeText(
+            Activity,
+            message,
+            Toast.LENGTH_SHORT).show();
+    }
+
+    // Return object with "public methods"
+    
+    return {
+        theMorph: morph,
+        save: savePainting,
+        setBrushSize: function(size) { brushRadius = size / 2; },
+        setColor: function(color) { brushColor = color; },
+        toggleArtisticMode: function() { artisticMode = !artisticMode; }
+    };
 }
 
-/*
-public class SketchMorph extends Morph
+function onCreateOptionsMenu(menu)
 {
-    Bitmap drawing;
-    Canvas canvas;
-    Point lastPoint;
+    // We create the menu dynamically instead!
+    return true;
+}
+
+function onPrepareOptionsMenu(menu)
+{
+    OptionsMenuItems = 
+        [["Small Brush", function() { Sketch.setBrushSize(20); }],
+         ["Large Brush", function() { Sketch.setBrushSize(50); }],
+         ["Black Color", function() { Sketch.setColor(Color.BLACK); }],
+         ["White Color", function() { Sketch.setColor(Color.WHITE); }],
+         ["Toggle Artistic Mode", function() { Sketch.toggleArtisticMode(); }],
+         ["Save Painting", function() { Sketch.save(); }]];
+    menu.clear();
+    menuAddItems(menu, OptionsMenuItems);
     
-    public SketchMorph(Context context)
+    return true;
+}
+
+function onOptionsItemSelected(item)
+{
+    menuDispatch(item, OptionsMenuItems);
+    return true;
+}
+
+function menuAddItems(menu, items)
+{
+    for (var i = 0; i < items.length; ++i)
     {
-        super(context);
-        
-        // Create drawing area.
-        drawing = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
-        canvas = new Canvas(drawing);
-        Paint paint = new Paint();
-        paint.setARGB(255, 255, 255, 255);
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawPaint(paint);
-        
-        // Action handlers.
-        drawAction(DrawAction());
-        touchDownAction(PaintDot());
-        touchMoveAction(PaintStroke());
-    }
-    
-    Action DrawAction()
-    {
-        return new Action()
-        {
-            public Object doWith(Object screen)
-            {
-                asCanvas(screen).drawBitmap(drawing, 0, 0, null);
-                return null;
-            }
-        };
-    }
-    
-    Action PaintDot()
-    {
-        return new Action()
-        {
-            public Object doWith(Object event)
-            {
-                Paint paint = new Paint();
-                paint.setColor(Color.BLACK);
-                paint.setStyle(Paint.Style.FILL);
-                paint.setAntiAlias(true);
-                int x = (int) asMotionEvent(event).getX();
-                int y = (int) asMotionEvent(event).getY();
-                canvas.drawOval(
-                    new RectF(x - 10, y - 10, x + 10, y + 10), 
-                    paint);
-                invalidate();
-                lastPoint = new Point(x, y);
-                
-                return null;
-            }
-        };
-    }
-    
-    Action PaintStroke()
-    {
-        return new Action()
-        {
-            public Object doWith(Object event)
-            {
-                Paint paint = new Paint();
-                paint.setColor(Color.BLACK);
-                paint.setStyle(Paint.Style.FILL);
-                paint.setAntiAlias(true);
-                paint.setStrokeWidth(20);
-                paint.setStrokeCap(Paint.Cap.ROUND);
-                int x = (int) asMotionEvent(event).getX();
-                int y = (int) asMotionEvent(event).getY();
-                canvas.drawLine(
-                    lastPoint.x, 
-                    lastPoint.y, 
-                    x, 
-                    y, 
-                    paint);
-                invalidate();
-                lastPoint = new Point(x, y);
-                
-                return null;
-            }
-        };
+        menu.add(Menu.NONE, Menu.FIRST + i, Menu.NONE, items[i][0]);
     }
 }
-*/
+
+function menuDispatch(item, items)
+{
+    var i = item.getItemId() - Menu.FIRST;
+    items[i][1]();;
+}

@@ -5,12 +5,12 @@
 //
 // I have been thinking about changing the design to use JavaScript objects 
 // instead. But it is kind of refreshing to go with a really simple design. 
-// The way it works now is that DroidScriptActivity (Java code) calls functions 
-// in this file for various events in the program. There might be problems with 
-// "name space pollution" if JavaScript libraries become common on DroidScript, 
-// so this design may need to change.
+// The way it works is that DroidScriptActivity (Java code) calls functions 
+// in this file for various events in the program. 
+// TODO: Add more "onXXX" functions.
 //
-// TODO: Add better error handling.
+// TODO: For libraries to have their own namespace, the require function in
+// CommonJS should be implemented.
 //
 // @author Mikael Kindborg
 // Email: mikael.kindborg@gmail.com
@@ -20,12 +20,16 @@
 // Source code license: MIT
 //
 
-// Short names for packages.
+// Short names for Java classes
 var Droid = Packages.comikit.droidscript.Droid;
+var DroidScriptFileHandler = Packages.comikit.droidscript.DroidScriptFileHandler;
 var AlertDialog = Packages.android.app.AlertDialog;
 var DialogInterface = Packages.anroid.content.DialogInterface;
-var Widget = Packages.android.widget;
-var LayoutParams = Packages.android.view.ViewGroup.LayoutParams;
+var EditText = Packages.android.widget.EditText;
+var Button = Packages.android.widget.Button;
+var Toast = Packages.android.widget.Toast;
+var LinearLayout = Packages.android.widget.LinearLayout;
+var LayoutParams = Packages.android.widget.LinearLayout.LayoutParams;
 var View = Packages.android.view.View;
 var Gravity = Packages.android.view.Gravity;
 var Intent = Packages.android.content.Intent;
@@ -33,37 +37,20 @@ var Menu = Packages.android.view.Menu;
 var Intent = Packages.android.content.Intent;
 var Uri = Packages.android.net.Uri;
 
-// Global variables.
+// Global variables
 var Server;
 var Editor;
+var OptionsMenuItems;
 
 // Called when creating the Activity
 function onCreate(icicle)
 {
     // An example script that can both be evaluated and run
     // as an activity.
-    var script = ''
-        + 'var Widget = Packages.android.widget;\n'
-        + 'var Gravity = Packages.android.view.Gravity;\n\n'
-        + 'function onCreate(icicle) {\n'
-        + '    var text = "Welcome to DroidScript - "\n'
-        + '        + "JavaScript on Android!\\n"\n'
-        + '        + "With a dynamic language like JavaScript "\n'
-        + '        + "applications can be authored interactively and "\n'
-        + '        + "also be updated dynamically. "\n'
-        + '        + "The vision is a web of linked applications, "\n'
-        + '        + "similar in spirit to HyperCard stacks.";\n'
-        + '    var editor = new Widget.EditText(Activity);\n'
-        + '    editor.setGravity(Gravity.TOP);\n'
-        + '    editor.setText(text);\n'
-        + '    Activity.setContentView(editor); }\n\n'
-        + 'Widget.Toast.makeText(Activity,\n'
-        + '    "Hello World",\n'
-        + '    Widget.Toast.LENGTH_SHORT).show();\n'
-        + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n';
-    
-    var editor = new Widget.EditText(Activity);
-    editor.setLayoutParams(new Widget.LinearLayout.LayoutParams(
+    var script = DroidScriptFileHandler.create()
+        .readStringFromFileOrUrl("droidscript/Hello.js");
+    var editor = new EditText(Activity);
+    editor.setLayoutParams(new LayoutParams(
             LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
     editor.setGravity(Gravity.TOP);
     editor.setSelectAllOnFocus(false);
@@ -74,38 +61,46 @@ function onCreate(icicle)
 //    editor.setScrollContainer(true);
     editor.setText(script);
     
-    // Set global variable (yuck!)
+    // Remember the editor view.
     Editor = editor;
     
-    // The button that evaluates the code in the script view.
-    var buttonEval = new Widget.Button(Activity);
-    buttonEval.setLayoutParams(new Widget.LinearLayout.LayoutParams(
+    // Button that evaluates the code in the script view.
+    var buttonRun = new Button(Activity);
+    buttonRun.setLayoutParams(new LayoutParams(
         LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
-    buttonEval.setText(Droid.translate("EVALUATE"));
-    buttonEval.setOnClickListener(function () { 
+    buttonRun.setText(Droid.translate("RUN"));
+    buttonRun.setOnClickListener(function () { 
         Activity.eval(editor.getText().toString()); });
     
-    // Run the code in the script view as a new activity.
-    var buttonRun = new Widget.Button(Activity);
-    buttonRun.setLayoutParams(new Widget.LinearLayout.LayoutParams(
+    // Button that runs the code in the script view as a new activity.
+    var buttonRunAsActivity = new Button(Activity);
+    buttonRunAsActivity.setLayoutParams(new LayoutParams(
         LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
-    buttonRun.setText(Droid.translate("RUN_AS_ACTIVITY"));
-    buttonRun.setOnClickListener(function () { 
+    buttonRunAsActivity.setText(Droid.translate("RUN_AS_ACTIVITY"));
+    buttonRunAsActivity.setOnClickListener(function () { 
         var intent = new Intent();
         intent.setClassName(Activity, "comikit.droidscript.DroidScriptActivity");
         intent.putExtra("Script", editor.getText().toString());
         Activity.startActivity(intent); });
+
+    // Button that starts a server for a remote editor.
+    var buttonStartServer = new Button(Activity);
+    buttonStartServer.setLayoutParams(new LayoutParams(
+        LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
+    buttonStartServer.setText(Droid.translate("START_SERVER"));
+    buttonStartServer.setOnClickListener(function () { openServer(); });
     
-    var buttonLayout = new Widget.LinearLayout(Activity);
-    buttonLayout.setOrientation(Widget.LinearLayout.HORIZONTAL);
-    buttonLayout.setLayoutParams(new Widget.LinearLayout.LayoutParams(
+    var buttonLayout = new LinearLayout(Activity);
+    buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
+    buttonLayout.setLayoutParams(new LayoutParams(
         LayoutParams.FILL_PARENT,  LayoutParams.WRAP_CONTENT, 0));
-    buttonLayout.addView(buttonEval);
     buttonLayout.addView(buttonRun);
+    buttonLayout.addView(buttonRunAsActivity);
+    buttonLayout.addView(buttonStartServer);
     
-    var mainLayout = new Widget.LinearLayout(Activity);
-    mainLayout.setOrientation(Widget.LinearLayout.VERTICAL);
-    mainLayout.setLayoutParams(new Widget.LinearLayout.LayoutParams(
+    var mainLayout = new LinearLayout(Activity);
+    mainLayout.setOrientation(LinearLayout.VERTICAL);
+    mainLayout.setLayoutParams(new LayoutParams(
         LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
     mainLayout.addView(editor);
     mainLayout.addView(buttonLayout);
@@ -129,48 +124,69 @@ function onCreateOptionsMenu(menu)
 
 function onPrepareOptionsMenu(menu)
 {
+    OptionsMenuItems = 
+        [[Droid.translate("OPEN_SCRIPT"), function() { openScriptDialog(); }],
+         [Droid.translate("UPDATE_APP_SCRIPTS"), function() { updateApplicationScripts(); }],
+         [Droid.translate("BE_KIND"), function() { showToast(Droid.translate("BE_KIND_MESSAGE")); }],
+         ["Colors app", function() { openScript("droidscript/Colors.js"); showToast("Press Run Activity"); }],
+         ["Paint app", function() { openScript("droidscript/Paint.js"); showToast("Press Run Activity"); }],
+         [Droid.translate("QUIT_APP"), function() { Activity.finish(); }]];
     menu.clear();
+    menuAddItems(menu, OptionsMenuItems);
     
-    menuAdd(menu, 10, Droid.translate("OPEN_SCRIPT"));
-    menuAdd(menu, 11, Droid.translate("START_SERVER"));
-    menuAdd(menu, 12, Droid.translate("SHOW_MESSAGES"));
-    menuAdd(menu, 13, Droid.translate("UPDATE_APP_SCRIPTS"));
-    menuAdd(menu, 14, Droid.translate("QUIT_APP"));
-
     return true;
 }
 
 function onOptionsItemSelected(item)
 {
-    if (menuItemHasId(item, 10)) { openScript(); }
-    else 
-    if (menuItemHasId(item, 11)) { openServer(); }
-    else
-    if (menuItemHasId(item, 12)) { Activity.showMessages(); }
-    else
-    if (menuItemHasId(item, 13)) { updateApplicationScripts(); }
-    else
-    if (menuItemHasId(item, 14)) { Activity.finish(); }
-    
+    menuDispatch(item, OptionsMenuItems);
     return true;
 }
 
-function openScript()
+function menuAddItems(menu, items)
 {
-    var input = new Widget.EditText(Activity);
+    for (var i = 0; i < items.length; ++i)
+    {
+        menu.add(Menu.NONE, Menu.FIRST + i, Menu.NONE, items[i][0]);
+    }
+}
+
+function menuDispatch(item, items)
+{
+    var i = item.getItemId() - Menu.FIRST;
+    items[i][1]();;
+}
+
+function showToast(message)
+{
+    Toast.makeText(
+        Activity,
+        message,
+        Toast.LENGTH_SHORT).show();
+}
+
+function openScriptDialog()
+{
+    var input = new EditText(Activity);
     input.setText("droidscript/Toast.js");
     var dialog = new AlertDialog.Builder(Activity);
     dialog.setTitle(Droid.translate("OPEN_SCRIPT"));
     dialog.setMessage(Droid.translate("ENTER_FILE_OR_URL"));
     dialog.setView(input);
     dialog.setPositiveButton(Droid.translate("OPEN"), function() {
-        var script = Packages.comikit.droidscript.DroidScriptFileHandler
-            .create().readStringFromFileOrUrl(input.getText().toString());
-        Editor.setText(script);
+        var scriptFileName = input.getText().toString();
+        openScript(scriptFileName);
     });
     dialog.setNegativeButton(Droid.translate("CANCEL"), function() {
     });
     dialog.show();
+}
+
+function openScript(scriptFileName)
+{
+    var script = DroidScriptFileHandler.create()
+        .readStringFromFileOrUrl(scriptFileName);
+    Editor.setText(script);
 }
 
 function openServer()
@@ -206,17 +222,6 @@ function updateApplicationScriptsDone()
     dialog.show();
 }
 
-// Menu helper function.
-function menuAdd(menu, id, label)
-{
-    menu.add(Menu.NONE, Menu.FIRST + id, Menu.NONE, label);
-}
-
-// Menu helper function.
-function menuItemHasId(item, id)
-{
-    return (Menu.FIRST + id) == item.getItemId();
-}
 
 //--------------------------------------------------------------------
 

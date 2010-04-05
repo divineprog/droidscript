@@ -16,30 +16,30 @@ import android.view.View;
  */
 public class Morph extends View
 {
-    DrawHandler drawHandler;
-    MeasureHandler measureHandler;
-    SizeChangedHandler sizeChangedHandler;
+    OnDrawListener onDrawListener;
+    OnMeasureListener onMeasureListener;
+    OnSizeChangedListener onSizeChangedListener;
     
     public Morph(Context context)
     {
         super(context);
     }
     
-    public Morph setDrawHandler(DrawHandler handler) 
+    public Morph setOnDrawListener(OnDrawListener listener) 
     { 
-        this.drawHandler = handler; 
+        this.onDrawListener = listener; 
         return this; 
     }
     
-    public Morph setMeasureHandler(MeasureHandler handler) 
+    public Morph setOnMeasureListener(OnMeasureListener listener) 
     { 
-        this.measureHandler = handler; 
+        this.onMeasureListener = listener; 
         return this; 
     }
     
-    public Morph setSizeChangedHandler(SizeChangedHandler handler) 
+    public Morph setOnSizeChangedListener(OnSizeChangedListener listener) 
     { 
-        this.sizeChangedHandler = handler; 
+        this.onSizeChangedListener = listener; 
         return this; 
     }
     
@@ -47,7 +47,7 @@ public class Morph extends View
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        if (null != drawHandler) { drawHandler.draw(canvas); }
+        if (null != onDrawListener) { onDrawListener.onDraw(canvas); }
     }
     
     @Override
@@ -56,9 +56,9 @@ public class Morph extends View
         // View.MeasureSpec.AT_MOST      The child can be as large as it wants up to the specified size.
         // View.MeasureSpec.EXACTLY      The parent has determined an exact size for the child.
         // View.MeasureSpec.UNSPECIFIED  The parent has not imposed any constraint on the child.
-        if (null != measureHandler) 
+        if (null != onMeasureListener) 
         {
-            Point p = measureHandler.measure(widthMeasureSpec, heightMeasureSpec);
+            Point p = onMeasureListener.onMeasure(widthMeasureSpec, heightMeasureSpec);
             setMeasuredDimension(p.x, p.y); 
         }
         else 
@@ -70,21 +70,21 @@ public class Morph extends View
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh)
     {
-        if (null != sizeChangedHandler) { sizeChangedHandler.sizeChanged(w, h, oldw, oldh); }
+        if (null != onSizeChangedListener) { onSizeChangedListener.onSizeChanged(w, h, oldw, oldh); }
     }
     
-    public interface DrawHandler 
+    public interface OnDrawListener 
     {
-        void draw(Canvas canvas);
+        void onDraw(Canvas canvas);
     }
     
-    public interface MeasureHandler 
+    public interface OnMeasureListener 
     {
-        Point measure(int widthMeasureSpec, int heightMeasureSpec);
+        Point onMeasure(int widthMeasureSpec, int heightMeasureSpec);
     }
     
-    public interface SizeChangedHandler 
+    public interface OnSizeChangedListener 
     {
-        void sizeChanged(int w, int h, int oldw, int oldh);
+        void onSizeChanged(int w, int h, int oldw, int oldh);
     }
 }

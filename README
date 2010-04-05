@@ -19,7 +19,8 @@ At http://droidscript.se there is a live editor you can use to interactively aut
 and experiment with JavaScript on a device or on the emulator.
 
 To-do list:
-- More stable error handling
+- More stable error handling -> Improved! Now errors are catched more 
+  roubustly and notifications are used to display JavaScript errors.
 - Better on-the-device editing capabilities (text editor with
   more traditional text selection & copy/paste, plus fixing
   the scroll thumb so that it displays properly; virtual keyboard
@@ -36,20 +37,19 @@ To-do list:
 
 How To Get Started
 
-The quick-start is to go to http://droidscript.se and download the app using the
-barcode at the bottom on the page using a barcode scanner application. Then follow
-instructions on the web page. 
+The quick-start is to go to http://droidscript.se and follow instructions 
+on the web page. 
 
-There is also a blog at http://droidscript.blogspot.com that has updates and posts
-related to DroidScript.
+There is  a blog at http://droidscript.blogspot.com that has updates and posts
+related to DroidScript. Here you will find download information.
 
 On startup, the app reads a JavaScript file: 
 /sdcard/droidscript/DroidScriptApp.js
 
-If not present, this file, the script DroidScriptServer.js and the demo script Toast.js, 
-are downloaded from GitHub when the app starts.
+If not present, DroidScriptApp.js, DroidScriptServer.js and a number of
+additional script files are downloaded from GitHub when the app starts.
 
-How To Get Stared With Development
+How To Get Started With Development
 
 Grab the project from GitHub.
 

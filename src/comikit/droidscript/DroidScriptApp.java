@@ -38,7 +38,10 @@ public class DroidScriptApp extends DroidScriptActivity
         {
             { "droidscript/DroidScriptApp.js", urlBase + "javascript/DroidScriptApp.js" },
             { "droidscript/DroidScriptServer.js", urlBase + "javascript/DroidScriptServer.js" },
-            { "droidscript/Toast.js", urlBase + "javascript/Toast.js" }
+            { "droidscript/Hello.js", urlBase + "javascript/Hello.js" },
+            { "droidscript/Toast.js", urlBase + "javascript/Toast.js" },
+            { "droidscript/Colors.js", urlBase + "javascript/Colors.js" },
+            { "droidscript/Paint.js", urlBase + "javascript/Paint.js" }
         };
     }
     

@@ -14,9 +14,10 @@
 // Source code license: MIT
 //
 
+// Java classes
 var AlertDialog = Packages.android.app.AlertDialog;
 var DialogInterface = Packages.anroid.content.DialogInterface;
-var Widget = Packages.android.widget;
+var TextView = Packages.android.widget.TextView;
 var LayoutParams = Packages.android.view.ViewGroup.LayoutParams;
 var View = Packages.android.view.View;
 var Gravity = Packages.android.view.Gravity;
@@ -24,26 +25,35 @@ var Intent = Packages.android.content.Intent;
 var Menu = Packages.android.view.Menu;
 var Intent = Packages.android.content.Intent;
 var Uri = Packages.android.net.Uri;
-var DroidScript = Packages.comikit.droidscript;
+var DroidScriptServer = Packages.comikit.droidscript.DroidScriptServer;
 var Droid = Packages.comikit.droidscript.Droid;
 
-var Server;
+// Global variables
+var Server; // The web server
+var OptionsMenuItems; // Items in the options menu
+var MessageView; // The main view with status text
+var AppView; // For use by scripts to set the view of the scripted app
 
 function onCreate(icicle)
 {
-    var view = new Widget.TextView(Activity);
-    view.setGravity(Gravity.TOP);
-    view.setTextSize(20);
-    view.setText(
-        "Welcome to the DroidScript Live Server!\n"
-        + "IP-address:\n"
-        + DroidScript.DroidScriptServer.getIpAddressesAsString()
-    );
-    
-    // Set global variable (yuck!)
-    MessageView = view;
+    if (isUndefined(MessageView))
+    {
+        var view = new TextView(Activity);
+        view.setGravity(Gravity.TOP);
+        view.setTextSize(20);
+        view.setText(
+            "Welcome to the DroidScript Live Server!\n"
+            + "IP-address:\n"
+            + DroidScriptServer.getIpAddressesAsString()
+        );
+        
+        // Remember the view.
+        MessageView = view;
+    }
 
-    Activity.setContentView(view);
+    if (isDefined(AppView)) { showView(AppView); }
+    else 
+    if (isDefined(MessageView)) { showView(MessageView); }
 }
 
 function onResume()
@@ -75,29 +85,46 @@ function onPrepareOptionsMenu(menu)
     return true;
 }
 
-function onOptionsItemSelected(item)
+function onPrepareOptionsMenu(menu)
 {
-    if (menuItemHasId(item, 10)) { Activity.showMessages(); }
-    else
-    if (menuItemHasId(item, 11)) { stopServer(); }
-    else
-    if (menuItemHasId(item, 12)) { startServer(); }
-    else
-    if (menuItemHasId(item, 13)) { stopServer(); Activity.finish(); }
-
+    OptionsMenuItems = 
+        [[Droid.translate("STOP_SERVER"), function() { stopServer(); }],
+         [Droid.translate("START_SERVER"), function() { startServer(); }],
+         [Droid.translate("CLOSE"), function() { stopServer(); Activity.finish(); }]];
+    menu.clear();
+    menuAddItems(menu, OptionsMenuItems);
+    
     return true;
 }
 
-// Menu helper function.
-function menuAdd(menu, id, label)
+function onOptionsItemSelected(item)
 {
-    menu.add(Menu.NONE, Menu.FIRST + id, Menu.NONE, label);
+    menuDispatch(item, OptionsMenuItems);
+    return true;
 }
 
-// Menu helper function.
-function menuItemHasId(item, id)
+function menuAddItems(menu, items)
 {
-    return (Menu.FIRST + id) == item.getItemId();
+    for (var i = 0; i < items.length; ++i)
+    {
+        menu.add(Menu.NONE, Menu.FIRST + i, Menu.NONE, items[i][0]);
+    }
+}
+
+function menuDispatch(item, items)
+{
+    var i = item.getItemId() - Menu.FIRST;
+    items[i][1]();;
+}
+
+function showView(view)
+{
+    if (isDefined(view)) 
+    {
+        var parent = view.getParent();
+        if (isDefined(parent)) { parent.removeView(view); }
+        Activity.setContentView(view);
+    }
 }
 
 function log(s)
@@ -108,13 +135,11 @@ function log(s)
 
 function startServer()
 {
-    var DroidScriptServer = Packages.comikit.droidscript.DroidScriptServer;
     Server = DroidScriptServer.create();
     Server.setPort(4042);
     Server.setRequestHandler(function(method, uri, data) {
-        // TODO: Handle PUT and GET, look for action in request (eval or run).
         // TODO: Add save and get script.
-        // URI=/favicon.ico 
+        // TODO: Add support for favicon: URI=/favicon.ico 
         log("METHOD=" + method + " URI=" + uri + " DATA=" + data);
         if (("PUT" == method) && (uri.length() > 5) && ("/eval/" == uri.substring(0, 6)))
         {
@@ -146,3 +171,14 @@ function stopServer()
 {
     Server.stopServer();
 }
+
+function isUndefined(x)
+{
+    return x === undefined;
+}
+
+function isDefined(x)
+{
+    return x !== undefined && x !== null;
+}
+
