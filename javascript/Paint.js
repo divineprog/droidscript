@@ -148,7 +148,7 @@ function SketchMorph()
         if (!result) {
             showToast("Could not save painting"); }
         else {
-            showToast("Paiting saved in media gallery"); }
+            showToast("Painting saved in media gallery"); }
         
 //        try {
 //            out = DroidScriptFileHandler.create().openExternalStorageFileOutputStream(filename()));
