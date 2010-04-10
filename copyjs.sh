@@ -5,3 +5,4 @@ adb push ./javascript/Toast.js /sdcard/droidscript/Toast.js
 adb push ./javascript/Paint.js /sdcard/droidscript/Paint.js
 adb push ./javascript/Colors.js /sdcard/droidscript/Colors.js
 adb push ./javascript/Hello.js /sdcard/droidscript/Hello.js
+adb push ./javascript/FlipComics.js /sdcard/droidscript/FlipComics.js

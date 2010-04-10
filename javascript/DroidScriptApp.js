@@ -126,10 +126,11 @@ function onPrepareOptionsMenu(menu)
 {
     OptionsMenuItems = 
         [[Droid.translate("OPEN_SCRIPT"), function() { openScriptDialog(); }],
-         [Droid.translate("UPDATE_APP_SCRIPTS"), function() { updateApplicationScripts(); }],
-         [Droid.translate("BE_KIND"), function() { showToast(Droid.translate("BE_KIND_MESSAGE")); }],
          ["Colors app", function() { openScript("droidscript/Colors.js"); showToast("Press Run Activity"); }],
          ["Paint app", function() { openScript("droidscript/Paint.js"); showToast("Press Run Activity"); }],
+//         ["FlipComics", function() { openScript("droidscript/FlipComics.js"); showToast("Press Run Activity"); }],
+         [Droid.translate("BE_KIND"), function() { showToast(Droid.translate("BE_KIND_MESSAGE")); }],
+         [Droid.translate("UPDATE_APP_SCRIPTS"), function() { updateApplicationScripts(); }],
          [Droid.translate("QUIT_APP"), function() { Activity.finish(); }]];
     menu.clear();
     menuAddItems(menu, OptionsMenuItems);
@@ -291,7 +292,7 @@ function updateApplicationScriptsDone()
 //Activity.startActivity(intent); 
 
 // Old code that reloaded the current script file:
-// Activity.openFileOrUrl(Activity.getScriptFileName());
+// Activity.evalFileOrUrl(Activity.getScriptFileName());
 
 // Open web site
 //var intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://comikit.se/"));

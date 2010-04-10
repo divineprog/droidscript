@@ -4,7 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 /**
- * Main activity for the application.
+ * Main activity for the DroidScript application.
+ * 
  * @author Mikael Kindborg
  * Email: mikael.kindborg@gmail.com
  * Blog: divineprogrammer@blogspot.com
@@ -73,8 +74,7 @@ public class DroidScriptApp extends DroidScriptActivity
         } 
         catch (Exception e)
         {
-            logMessage("Error in installApplicationFiles: " + e.toString());
-            e.printStackTrace();
+            reportError(e);
         }
     }
     
@@ -94,8 +94,7 @@ public class DroidScriptApp extends DroidScriptActivity
         } 
         catch (Exception e)
         {
-            logMessage("Error in updateApplicationFiles: " + e.toString());
-            e.printStackTrace();
+            reportError(e);
         }
     }
 }

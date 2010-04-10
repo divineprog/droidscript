@@ -1,7 +1,5 @@
 package comikit.droidscript;
 
-import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.mozilla.javascript.Callable;
@@ -15,11 +13,9 @@ import org.mozilla.javascript.ScriptableObject;
 
 import android.R;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,14 +23,9 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 /**
  * Activity that has a JavaScript interpreter.
- * 
- * TODO: Make the interpreter run as a Service so that
- * we don't lose interpreter context when app is paused.
- * Or use onRetainNonConfigurationInstance().
  * 
  * @author Mikael Kindborg
  * Email: mikael.kindborg@gmail.com
@@ -49,7 +40,6 @@ public class DroidScriptActivity extends Activity
     
     Interpreter interpreter;
     String scriptFileName;
-    MessageLog messages = new MessageLog();
     
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -67,7 +57,7 @@ public class DroidScriptActivity extends Activity
             if (null != filenameOrUrl) 
             {   
                 setScriptFileName(filenameOrUrl);
-                openFileOrUrl(filenameOrUrl);
+                evalFileOrUrl(filenameOrUrl);
             }
             else
             if (null != script) 
@@ -78,13 +68,6 @@ public class DroidScriptActivity extends Activity
         
         // Call the onCreate JavaScript function.
         callJsFunction("onCreate", savedInstanceState);
-        
-        // We should not have any errors at this point.
-        // Check the log and display errors if there are any.
-        if (0 < messages.getNumberOfMessages()) 
-        {
-            showMessages();
-        }
     }
     
     @Override
@@ -190,7 +173,7 @@ public class DroidScriptActivity extends Activity
      * Run a script in the application directory. Less useful since the user 
      * has no access to this area, better to use the SD card.
      */
-    public Object openApplicationFile(final String fileName)
+    public Object evalApplicationFile(final String fileName)
     {
         try 
         {
@@ -200,11 +183,7 @@ public class DroidScriptActivity extends Activity
         }
         catch (Throwable e) 
         {
-            e.printStackTrace();
-            String errorMessage = "OP" + e.toString();
-            Log.i("DroidScript", errorMessage);
-            logMessage(errorMessage);
-            showMessages();
+            reportError(e);
             return null;
         }
     }
@@ -212,7 +191,7 @@ public class DroidScriptActivity extends Activity
     /**
      * Run a script on the SD card or at an url.
      */
-    public Object openFileOrUrl(final String filenameOrUrl)  
+    public Object evalFileOrUrl(final String filenameOrUrl)  
     {
         try
         {
@@ -222,11 +201,7 @@ public class DroidScriptActivity extends Activity
         }
         catch (Throwable e)
         {
-            e.printStackTrace();
-            String errorMessage = "OP" + e.toString();
-            Log.i("DroidScript", errorMessage);
-            logMessage(errorMessage);
-            showMessages();
+            reportError(e);
             return null;
         }
     }
@@ -246,32 +221,11 @@ public class DroidScriptActivity extends Activity
             {
                 try 
                 {
-                    //cx = ContextFactory.getGlobal().enterContext(cx);
                     result.set(interpreter.eval(code, sourceName));
                 }
-//                catch (RhinoException error)
-//                {
-//                    error.printStackTrace();
-//                    String errorMessage = 
-//                        "E1 " 
-//                        + "(" + error.columnNumber() + "): " 
-//                        + error.getMessage()
-//                        + " " + error.sourceName() 
-//                        + " " + error.lineNumber() 
-//                        + error.lineSource();
-//                    Log.i("DroidScript", errorMessage);
-//                    logMessage(errorMessage);
-//                    showMessages();
-//                    result.set(error);
-//                }
                 catch (Throwable e)
                 {
-                    handleJavaScriptError(e);
-//                    e.printStackTrace();
-//                    String errorMessage = "E2 " + e.toString();
-//                    Log.i("DroidScript", errorMessage);
-//                    logMessage(errorMessage);
-//                    showMessages();
+                    reportError(e);
                     result.set(e);
                 }
             }
@@ -286,44 +240,25 @@ public class DroidScriptActivity extends Activity
     }
     
     /**
-     * This works because it is called from the "onXXX" methods which are
-     * called in the UI-thread. 
-     * TODO: Make interpreter less thread sensitive.
+     * This works because method is called from the "onXXX" methods which are
+     * called in the UI-thread. Thus, no need to use run on UI-thread.
+     * TODO: Could be a problem if someone calls it from another class,
+     * make private for now.
      */
-    Object callJsFunction(String funName, Object... args)
+    private Object callJsFunction(String funName, Object... args)
     {
         try 
         {
             return interpreter.callJsFunction(funName, args);
         }
-//        catch (RhinoException error)
-//        {
-//            error.printStackTrace();
-//            String errorMessage = 
-//                "C1 " 
-//                + "(" + error.columnNumber() + "): " 
-//                + error.getMessage()
-//                + " " + error.sourceName() 
-//                + " " + error.lineNumber() 
-//                + error.lineSource();
-//            Log.i("DroidScript", errorMessage);
-//            logMessage(errorMessage);
-//            showMessages();
-//            return null;
-//        }
         catch (Throwable e)
         {
-            handleJavaScriptError(e);
-//            e.printStackTrace();
-//            String errorMessage = "C2 " + e.toString();
-//            Log.i("DroidScript", errorMessage);
-//            logMessage(errorMessage);
-//            showMessages();
+            reportError(e);
             return false;
         }
     }
 
-    void createInterpreter()
+    protected void createInterpreter()
     {
         // Initialize global context factory with our custom factory.
         if (null == contextFactory) 
@@ -354,37 +289,37 @@ public class DroidScriptActivity extends Activity
         interpreter.setActivity(this);
     }
     
-    public void logMessage(String errorMessage) 
-    {
-        messages.add(errorMessage);
-    }
+//    public void logMessage(String errorMessage) 
+//    {
+//        messages.add(errorMessage);
+//    }
+//    
+//    public void clearMessages() 
+//    {
+//        messages.clear();
+//    }
+//    
+//    public void showMessages()
+//    {
+//        TextView view = new TextView(this);
+//        view.setText(messages.getMessagesAsString());
+//        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+//        dialog.setTitle(Droid.translate("MESSAGES"));
+//        dialog.setView(view);
+//        dialog.setPositiveButton(
+//            Droid.translate("CLOSE"), 
+//            new DialogInterface.OnClickListener()
+//            {
+//                public void onClick(DialogInterface dialog, int which)
+//                {
+//                    // Here we clear all messages.
+//                    clearMessages();
+//                }
+//            });
+//        dialog.show();
+//    }
     
-    public void clearMessages() 
-    {
-        messages.clear();
-    }
-    
-    public void showMessages()
-    {
-        TextView view = new TextView(this);
-        view.setText(messages.getMessagesAsString());
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(Droid.translate("MESSAGES"));
-        dialog.setView(view);
-        dialog.setPositiveButton(
-            Droid.translate("CLOSE"), 
-            new DialogInterface.OnClickListener()
-            {
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    // Here we clear all messages.
-                    clearMessages();
-                }
-            });
-        dialog.show();
-    }
-    
-    public void handleJavaScriptError(Throwable e)
+    public void reportError(Throwable e)
     {
         // Create error message.
         String message = "";
@@ -431,7 +366,7 @@ public class DroidScriptActivity extends Activity
         e.printStackTrace();
     }
     
-    protected static class Interpreter
+    public static class Interpreter
     {
         Context context;
         Scriptable scope;
@@ -467,10 +402,10 @@ public class DroidScriptActivity extends Activity
             Context.exit();
         }
 
-        public Object eval(final String code, final String sourceName) throws Throwable
+        public Object eval(String code, String sourceName) throws Throwable
         {
-            //ContextFactory.enterContext(context);
-            return context.evaluateString(scope, code, sourceName, 1, null);
+            String processedCode = preprocess(code);
+            return context.evaluateString(scope, processedCode, sourceName, 1, null);
         }
         
         public Object callJsFunction(String funName, Object... args) throws Throwable
@@ -481,13 +416,85 @@ public class DroidScriptActivity extends Activity
                 Log.i("DroidScript", "Calling JsFun " + funName);
                 Function f = (Function) fun;
                 Object result = f.call(context, scope, scope, args);
-                return Context.toString(result);
+                return Context.toString(result); // Why did I use this?
             }
             else
             {
-                Log.i("DroidScript", "Could not find JsFun " + funName);
+                // Log.i("DroidScript", "Could not find JsFun " + funName);
                 return null;
             }
+        }
+        
+        public String preprocess(String code) throws Exception
+        {
+            // Convert multiline strings
+            return preprocessMultiLineStrings(code);
+        }
+        
+        public String preprocessMultiLineStrings(String code) throws Exception
+        {
+            StringBuilder result = new StringBuilder(code.length() + 1000);
+            
+            String delimiter = "\"\"\"";
+            int lastStop = 0;
+            while (true)
+            {
+                // Find next multiline delimiter
+                int start = code.indexOf(delimiter, lastStop);
+                if (-1 == start) 
+                { 
+                    // No delimiter found, append rest of the code 
+                    // to result and break
+                    result.append(code.substring(lastStop, code.length()));
+                    break; 
+                }
+                
+                // Find terminating delimiter
+                int stop = code.indexOf(delimiter, start + delimiter.length());
+                if (-1 == stop) 
+                { 
+                    // This is an error, throw an exception with error message
+                    throw new Exception("Multiline string not terminated");
+                }
+                
+                // Append the code from last stop up to the start delimiter
+                result.append(code.substring(lastStop, start));
+                
+                // Set new lastStop
+                lastStop = stop + delimiter.length();
+                
+                // Append multiline string converted to JavaScript code
+                result.append(
+                    convertMultiLineStringToJavaScript(
+                        code.substring(start + delimiter.length(), stop)));
+            }
+            
+            return result.toString();
+        }
+        
+        public String convertMultiLineStringToJavaScript(String s)
+        {
+            StringBuilder result = new StringBuilder(s.length() + 1000);
+            
+            char quote = '\"';
+            char newline = '\n';
+            String backslashquote = "\\\"";
+            String concat = "\\n\" + \n\"";
+            
+            result.append(quote);
+            
+            for (int i = 0; i < s.length(); ++i) 
+            {
+                char c = s.charAt(i);
+                if (c == quote) { result.append(backslashquote); }
+                else if (c == newline) { result.append(concat); }
+                else { result.append(c); }
+                Log.i("Multiline", result.toString());
+            }
+            
+            result.append(quote);
+            
+            return result.toString();
         }
     }
     
@@ -511,59 +518,59 @@ public class DroidScriptActivity extends Activity
             catch (Throwable e)
             {
                 Log.i("DroidScript", "ContextFactory catched error: " + e);
-                if (null != activity) { activity.handleJavaScriptError(e); }
+                if (null != activity) { activity.reportError(e); }
                 return e;
             }
-        }
-     }
-    
-    /**
-     * List of log entries.
-     */
-    public static class MessageLog
-    {
-        Collection<String> entries = new ConcurrentLinkedQueue<String>();
-        
-        public Collection<String> getMessages()
-        {
-            return entries;
-        }
-        
-        public String getMessagesAsString()
-        {
-            if (0 == entries.size()) 
-            {
-                return Droid.translate("NO_MESSAGES_TO_DISPLAY");
-            }
-            
-            String messages = "";
-            
-            for (String s : getMessages())
-            {
-                messages = s + "\n" + messages;
-            }
-            
-            return messages;
-        }
-        
-        public int getNumberOfMessages()
-        {
-            return entries.size();
-        }
-        
-        public void add(String message)
-        {
-            android.util.Log.i("DroidScript", "Adding message: " + message);
-            entries.add(message);
-        }
-        
-        public void clear()
-        {
-            entries.clear();
         }
     }
 }
 
+
+//    /**
+//     * List of log entries.
+//     */
+//    public static class MessageLog
+//    {
+//        Collection<String> entries = new ConcurrentLinkedQueue<String>();
+//        
+//        public Collection<String> getMessages()
+//        {
+//            return entries;
+//        }
+//        
+//        public String getMessagesAsString()
+//        {
+//            if (0 == entries.size()) 
+//            {
+//                return Droid.translate("NO_MESSAGES_TO_DISPLAY");
+//            }
+//            
+//            String messages = "";
+//            
+//            for (String s : getMessages())
+//            {
+//                messages = s + "\n" + messages;
+//            }
+//            
+//            return messages;
+//        }
+//        
+//        public int getNumberOfMessages()
+//        {
+//            return entries.size();
+//        }
+//        
+//        public void add(String message)
+//        {
+//            android.util.Log.i("DroidScript", "Adding message: " + message);
+//            entries.add(message);
+//        }
+//        
+//        public void clear()
+//        {
+//            entries.clear();
+//        }
+//    }
                 // Just an experiment, using a custom ContextFactory instead.
 //                interpreter.setErrorReporter(new ErrorReporter() {
 //                    public void error(String message, String sourceName, int line, String lineSource, int lineOffset) {
