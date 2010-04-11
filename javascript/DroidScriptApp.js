@@ -185,9 +185,9 @@ function openScriptDialog()
 
 function openScript(scriptFileName)
 {
-    var script = DroidScriptFileHandler.create()
-        .readStringFromFileOrUrl(scriptFileName);
-    Editor.setText(script);
+    var DroidScriptActivity = Packages.comikit.droidscript.DroidScriptActivity;
+    var script = DroidScriptFileHandler.create().readStringFromFileOrUrl(scriptFileName);
+    Editor.setText(DroidScriptActivity.extractCodeFromDroidScriptTags(script));
 }
 
 function openServer()

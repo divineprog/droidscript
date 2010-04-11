@@ -135,16 +135,21 @@ function log(s)
 
 function startServer()
 {
+    DroidScriptServer.setLoggingIsOn(true);
     Server = DroidScriptServer.create();
     Server.setPort(4042);
     Server.setRequestHandler(function(method, uri, data) {
         // TODO: Add save and get script.
         // TODO: Add support for favicon: URI=/favicon.ico 
-        log("METHOD=" + method + " URI=" + uri + " DATA=" + data);
+        
+        // log("METHOD=" + method + " URI=" + uri + " DATA=" + data);
+        log("METHOD=" + method + " URI=" + uri);
+        
         if (("PUT" == method) && (uri.length() > 5) && ("/eval/" == uri.substring(0, 6)))
         {
             return Activity.eval(data);
         }
+        else
         if (("PUT" == method) && (uri.length() > 4) && ("/run/" == uri.substring(0, 5)))
         {
             var intent = new Intent();
@@ -153,10 +158,12 @@ function startServer()
             Activity.startActivity(intent);
             return;
         }
+        else
         if (("GET" == method) && (uri.length() > 5) && ("/eval/" == uri.substring(0, 6)))
         {
             return Activity.eval(uri.substring(6));
         }
+        else
         if (("GET" == method) && (uri.length() > 5) && ("/hello" == uri.substring(0, 6)))
         {
             return "Welcome to the wonderful world of DroidScript!";

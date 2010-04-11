@@ -366,6 +366,109 @@ public class DroidScriptActivity extends Activity
         e.printStackTrace();
     }
     
+    public static String preprocess(String code) throws Exception
+    {
+        return preprocessMultiLineStrings(
+            extractCodeFromDroidScriptTags(code));
+    }
+        
+    public static String extractCodeFromDroidScriptTags(String code) throws Exception
+    {
+        String startDelimiter = "DROIDSCRIPT_BEGIN";
+        String stopDelimiter = "DROIDSCRIPT_END";
+
+        // Find start delimiter
+        int start = code.indexOf(startDelimiter, 0);
+        if (-1 == start) 
+        { 
+            // No delimiter found, return code untouched
+            return code;
+        }
+        
+        // Find stop delimiter
+        int stop = code.indexOf(stopDelimiter, start);
+        if (-1 == stop) 
+        { 
+            // No delimiter found, return code untouched
+            return code;
+        }
+        
+        // Extract the code between start and stop.
+        String result = code.substring(start + startDelimiter.length(), stop);
+        
+        // Replace escaped characters with plain characters.
+        // TODO: Add more characters here
+        result = result.replace("&lt;", "<").replace("&gt;", ">");
+        
+        return result;
+    }
+    
+    public static String preprocessMultiLineStrings(String code) throws Exception
+    {
+        StringBuilder result = new StringBuilder(code.length() + 1000);
+        
+        String delimiter = "\"\"\"";
+        int lastStop = 0;
+        while (true)
+        {
+            // Find next multiline delimiter
+            int start = code.indexOf(delimiter, lastStop);
+            if (-1 == start) 
+            { 
+                // No delimiter found, append rest of the code 
+                // to result and break
+                result.append(code.substring(lastStop, code.length()));
+                break; 
+            }
+            
+            // Find terminating delimiter
+            int stop = code.indexOf(delimiter, start + delimiter.length());
+            if (-1 == stop) 
+            { 
+                // This is an error, throw an exception with error message
+                throw new Exception("Multiline string not terminated");
+            }
+            
+            // Append the code from last stop up to the start delimiter
+            result.append(code.substring(lastStop, start));
+            
+            // Set new lastStop
+            lastStop = stop + delimiter.length();
+            
+            // Append multiline string converted to JavaScript code
+            result.append(
+                convertMultiLineStringToJavaScript(
+                    code.substring(start + delimiter.length(), stop)));
+        }
+        
+        return result.toString();
+    }
+    
+    public static String convertMultiLineStringToJavaScript(String s)
+    {
+        StringBuilder result = new StringBuilder(s.length() + 1000);
+        
+        char quote = '\"';
+        char newline = '\n';
+        String backslashquote = "\\\"";
+        String concat = "\\n\" + \n\"";
+        
+        result.append(quote);
+        
+        for (int i = 0; i < s.length(); ++i) 
+        {
+            char c = s.charAt(i);
+            if (c == quote) { result.append(backslashquote); }
+            else if (c == newline) { result.append(concat); }
+            else { result.append(c); }
+            //Log.i("Multiline", result.toString());
+        }
+        
+        result.append(quote);
+        
+        return result.toString();
+    }
+    
     public static class Interpreter
     {
         Context context;
@@ -423,78 +526,6 @@ public class DroidScriptActivity extends Activity
                 // Log.i("DroidScript", "Could not find JsFun " + funName);
                 return null;
             }
-        }
-        
-        public String preprocess(String code) throws Exception
-        {
-            // Convert multiline strings
-            return preprocessMultiLineStrings(code);
-        }
-        
-        public String preprocessMultiLineStrings(String code) throws Exception
-        {
-            StringBuilder result = new StringBuilder(code.length() + 1000);
-            
-            String delimiter = "\"\"\"";
-            int lastStop = 0;
-            while (true)
-            {
-                // Find next multiline delimiter
-                int start = code.indexOf(delimiter, lastStop);
-                if (-1 == start) 
-                { 
-                    // No delimiter found, append rest of the code 
-                    // to result and break
-                    result.append(code.substring(lastStop, code.length()));
-                    break; 
-                }
-                
-                // Find terminating delimiter
-                int stop = code.indexOf(delimiter, start + delimiter.length());
-                if (-1 == stop) 
-                { 
-                    // This is an error, throw an exception with error message
-                    throw new Exception("Multiline string not terminated");
-                }
-                
-                // Append the code from last stop up to the start delimiter
-                result.append(code.substring(lastStop, start));
-                
-                // Set new lastStop
-                lastStop = stop + delimiter.length();
-                
-                // Append multiline string converted to JavaScript code
-                result.append(
-                    convertMultiLineStringToJavaScript(
-                        code.substring(start + delimiter.length(), stop)));
-            }
-            
-            return result.toString();
-        }
-        
-        public String convertMultiLineStringToJavaScript(String s)
-        {
-            StringBuilder result = new StringBuilder(s.length() + 1000);
-            
-            char quote = '\"';
-            char newline = '\n';
-            String backslashquote = "\\\"";
-            String concat = "\\n\" + \n\"";
-            
-            result.append(quote);
-            
-            for (int i = 0; i < s.length(); ++i) 
-            {
-                char c = s.charAt(i);
-                if (c == quote) { result.append(backslashquote); }
-                else if (c == newline) { result.append(concat); }
-                else { result.append(c); }
-                Log.i("Multiline", result.toString());
-            }
-            
-            result.append(quote);
-            
-            return result.toString();
         }
     }
     

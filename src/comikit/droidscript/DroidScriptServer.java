@@ -46,6 +46,7 @@ import android.util.Log;
 /**
  * Small http-server that accepts JavaScript PUT requests. 
  * Based on: http://hc.apache.org/
+ * 
  * @author Mikael Kindborg
  * Email: mikael.kindborg@gmail.com
  * Blog: divineprogrammer@blogspot.com
@@ -55,6 +56,11 @@ import android.util.Log;
  */
 public class DroidScriptServer
 {
+    static boolean loggingIsOn = true;
+    int port = 4042;
+    HttpHandler httpHandler;
+    ServerThread server;
+    
     public interface IRequestHandler
     {
         String handle(String requestType, String uri, String data);
@@ -67,21 +73,25 @@ public class DroidScriptServer
 
     public static void log(String s)
     {
-        Log.i("DroidScriptServer", s);
+        if (loggingIsOn)
+        {
+            Log.i("DroidScriptServer", s);
+        }
     }
 
-    int port = 4042;
-    HttpHandler httpHandler;
-    ServerThread server;
+    public static void setLoggingIsOn(boolean isOn)
+    {
+        loggingIsOn = isOn;
+    }
 
     private DroidScriptServer()
     {
         httpHandler = new HttpHandler();
     }
-
-    public DroidScriptServer setPort(int port)
+    
+    public DroidScriptServer setPort(int thePort)
     {
-        this.port = port;
+        port = thePort;
         return this;
     }
 
@@ -163,6 +173,7 @@ public class DroidScriptServer
         }
         return "No ip-addresses found";
     }
+    
     static class HttpHandler implements HttpRequestHandler
     {
         IRequestHandler handler;

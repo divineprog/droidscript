@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="comikit.droidscript"
-      android:versionCode="5"
-      android:versionName="5">
+      android:versionCode="6"
+      android:versionName="6">
     <application android:icon="@drawable/icon" android:label="DroidScript">
         <activity android:name=".DroidScriptApp"
                   android:label="DroidScript">
