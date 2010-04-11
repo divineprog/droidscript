@@ -17,13 +17,11 @@ function onCreate(bubble)
                     "Toast.makeText(Activity, '" + message + "', " +
                     "Toast.LENGTH_SHORT).show();"); }
             </script>
-            <h1>Hello World</h1>
-            <form>
-                <input 
-                    type="button" 
-                    value="Take pill" 
-                    onclick="showToast('You took the red pill!')">
-            </form>
+            <h1>Take the pill</h1>
+            <input 
+                type="button" 
+                value="Take pill" 
+                onclick="showToast('You have taken the red pill!')">
         </body>
     </html>""";
     
