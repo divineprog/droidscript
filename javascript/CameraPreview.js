@@ -3,13 +3,11 @@ var SurfaceHolder = Packages.android.view.SurfaceHolder;
 var SurfaceView = Packages.android.view.SurfaceView;
 var Window = Packages.android.view.Window;
 
-var Preview = null;
-
 function onCreate(bundle) 
 {
     Activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
-    Preview = createPreviewSurface();
-    Activity.setContentView(Preview.getSurfaceView());
+    var preview = createPreviewSurface();
+    Activity.setContentView(preview.getSurfaceView());
 }
 
 function createPreviewSurface()
@@ -49,12 +47,13 @@ function createPreviewSurface()
     return object;
 }
 
-// Create an instance of a Java interface
-// javaInterface - the interface type
-// handler - object that will be sent messages to the instance
-function createInstance(javaInterface, handler)
+// Create an instance of a Java interface.
+//   javaInterface - the interface type
+//   object - JS object that will receive messages
+//     sent to the instance
+function createInstance(javaInterface, object)
 {
-    //Convert a Java array to a JavaScript array
+    // Convert a Java array to a JavaScript array
     function javaArrayToJsArray(javaArray)
     {
         var jsArray = [];
@@ -70,10 +69,10 @@ function createInstance(javaInterface, handler)
     var obj = lang.reflect.Proxy.newProxyInstance(
         lang.ClassLoader.getSystemClassLoader(),
         interfaces,
-        // Note, args is a Java array.
+        // Note, args is a Java array
         function(proxy, method, args) {
             // Convert Java array to JavaScript array
-            return handler[method.getName()].apply(
+            return object[method.getName()].apply(
                 null,
                 javaArrayToJsArray(args));
         });
