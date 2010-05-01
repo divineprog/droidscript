@@ -128,7 +128,7 @@ function onPrepareOptionsMenu(menu)
         [[Droid.translate("OPEN_SCRIPT"), function() { openScriptDialog(); }],
          ["Colors app", function() { openScript("droidscript/Colors.js"); showToast("Press Run Activity"); }],
          ["Paint app", function() { openScript("droidscript/Paint.js"); showToast("Press Run Activity"); }],
-//         ["FlipComics", function() { openScript("droidscript/FlipComics.js"); showToast("Press Run Activity"); }],
+//         ["Comics", function() { openScript("droidscript/ComicsDemoActivity.js"); showToast("Press Run Activity"); }],
          [Droid.translate("BE_KIND"), function() { showToast(Droid.translate("BE_KIND_MESSAGE")); }],
          [Droid.translate("UPDATE_APP_SCRIPTS"), function() { updateApplicationScripts(); }],
          [Droid.translate("QUIT_APP"), function() { Activity.finish(); }]];

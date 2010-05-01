@@ -34,9 +34,10 @@ function createPreviewSurface()
             camera = null; },
             
         surfaceChanged : function(holder, format, w, h) {
-            var parameters = camera.getParameters();
-            parameters.setPreviewSize(w, h);
-            camera.setParameters(parameters);
+            // Crashes the camera on Nexus One:
+            // var parameters = camera.getParameters();
+            // parameters.setPreviewSize(w, h);
+            // camera.setParameters(parameters);
             camera.startPreview(); }
     };
  

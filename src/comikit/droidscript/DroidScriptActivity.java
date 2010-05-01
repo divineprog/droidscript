@@ -319,7 +319,7 @@ public class DroidScriptActivity extends Activity
 //        dialog.show();
 //    }
     
-    public void reportError(Throwable e)
+    public void reportError(Object e)
     {
         // Create error message.
         String message = "";
@@ -363,7 +363,10 @@ public class DroidScriptActivity extends Activity
         
         // Log the error message.
         Log.i("DroidScript", "JavaScript Error: " + message);
-        e.printStackTrace();
+        if (e instanceof Throwable) 
+        {
+            ((Throwable) e).printStackTrace();
+        }
     }
     
     public static String preprocess(String code) throws Exception
@@ -398,9 +401,10 @@ public class DroidScriptActivity extends Activity
         
         // Replace escaped characters with plain characters.
         // TODO: Add more characters here
-        result = result.replace("&lt;", "<").replace("&gt;", ">");
-        
-        return result;
+        return result
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", "\"");
     }
     
     public static String preprocessMultiLineStrings(String code) throws Exception

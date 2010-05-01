@@ -1,10 +1,7 @@
 //
 // This file defines the DroidScript server Activity. The activity starts
 // a tiny web server and listens for requests on port 4042 (as default).
-// PUT and GET requests are accepted. There is no security what so ever
-// at this stage!
-//
-// TODO: Clean up the code. Add translations.
+// PUT and GET requests are accepted. There is no security what so ever!
 //
 // @author Mikael Kindborg
 // Email: mikael.kindborg@gmail.com
@@ -142,7 +139,7 @@ function startServer()
         // TODO: Add save and get script.
         // TODO: Add support for favicon: URI=/favicon.ico 
         
-        // log("METHOD=" + method + " URI=" + uri + " DATA=" + data);
+        //log("METHOD=" + method + " URI=" + uri + " DATA=" + data);
         log("METHOD=" + method + " URI=" + uri);
         
         if (("PUT" == method) && (uri.length() > 5) && ("/eval/" == uri.substring(0, 6)))
