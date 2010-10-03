@@ -54,11 +54,18 @@ public class DroidScriptActivity extends Activity
         {
             String filenameOrUrl = intent.getStringExtra("ScriptName");
             String script = intent.getStringExtra("Script");
+			String scriptAssetFilName = intent.getStringExtra("ScriptAsset");
+			
             if (null != filenameOrUrl) 
             {   
                 setScriptFileName(filenameOrUrl);
                 evalFileOrUrl(filenameOrUrl);
             }
+			else
+			if (null != scriptAssetFilName) 
+			{   
+				evalAssetFile(scriptAssetFilName);
+			}
             else
             if (null != script) 
             {   
@@ -182,6 +189,24 @@ public class DroidScriptActivity extends Activity
                 fileName);
         }
         catch (Throwable e) 
+        {
+            reportError(e);
+            return null;
+        }
+    }
+
+	/**
+     * Run a script stored as an asset.
+     */
+    public Object evalAssetFile(final String scriptName)  
+    {
+        try
+        {
+            return eval(
+                DroidScriptIO.create().readStringFromAssetFile(this, scriptName), 
+                scriptName);
+        }
+        catch (Throwable e)
         {
             reportError(e);
             return null;
