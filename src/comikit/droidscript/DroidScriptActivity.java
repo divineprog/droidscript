@@ -24,6 +24,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.mozilla.javascript.commonjs.module.*;
+import org.mozilla.javascript.commonjs.module.Require;
+
+
 /**
  * Activity that has a JavaScript interpreter.
  * 
@@ -497,12 +501,14 @@ public class DroidScriptActivity extends Activity
         
         return result.toString();
     }
+
     
     public static class Interpreter
     {
         Context context;
         Scriptable scope;
-        
+        Require require;
+
         public Interpreter()
         {
             // Creates and enters a Context. The Context stores information
@@ -518,6 +524,24 @@ public class DroidScriptActivity extends Activity
         
         public Interpreter setActivity(Activity activity)
         {
+			DroidScriptAssetProvider provider = new DroidScriptAssetProvider(activity);
+			Require require = new Require(context, scope, provider, null, null, true);
+			// require.install(scope);
+			// adding as 'private'  for the moment so we can override Packages.whatever.whatever 
+			/*
+			var require = function(id) {
+				if (id.match(/packages/)) {
+					var pkg = id.replace(/\//g,'.')
+					, pkg = pkg.charAt(0).toUpperCase() + pkg.slice(1)
+					return eval(pkg)
+				}
+				else {
+					return __require(id);
+				}
+			};
+			*/
+			ScriptableObject.putProperty(scope, "__require", this); 
+			
             // Set the global JavaScript variable Activity.
             ScriptableObject.putProperty(scope, "Activity", Context.javaToJS(activity, scope));
             return this;
