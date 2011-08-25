@@ -330,7 +330,7 @@ public class DroidScriptServer
             Socket socket = null;
             DefaultHttpServerConnection connection = null;
 
-            // TODO: Kolla hur detta är gjort i webbservern i kodexemplet:
+            // TODO: Kolla hur detta aar gjort i webbservern i kodexemplet:
             // http://svn.apache.org/repos/asf/httpcomponents/httpcore/branches/4.0.x/httpcore/src/examples/org/apache/http/examples/ElementalHttpServer.java
 
             try
