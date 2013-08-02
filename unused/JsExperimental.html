@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Experimental JavaScript</title>
+</head>
+<body>
+<script type="text/javascript">
+
+/*var fab = function(fun)
+{
+    alert("fab: " + fun);
+    return fun;
+} */
+
+function fab(fun)
+{
+	if (fun == fab) alert("fab: " + fun);
+    return fab;
+}
+
+(fab)(10)(20)(30)(fab)
+
+
+<!--
+var foob = function(fun)
+{
+    alert("foob: " + fun);
+    return fun;
+}
+(foob)(foob)(foob)(1)
+--></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+emulator -avd myavd -sdcard sdcard.iso

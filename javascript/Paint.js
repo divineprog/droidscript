@@ -22,7 +22,7 @@ var Menu = Packages.android.view.Menu;
 var Toast = Packages.android.widget.Toast;
 var MediaStore = Packages.android.provider.MediaStore;
 var Morph = Packages.comikit.droidscript.Morph;
-var DroidScriptFileHandler = Packages.comikit.droidscript.DroidScriptFileHandler;
+var DroidScriptIO = Packages.comikit.droidscript.DroidScriptIO;
     
 // Global variables
 
@@ -151,7 +151,7 @@ function SketchMorph()
             showToast("Painting saved in media gallery"); }
         
 //        try {
-//            out = DroidScriptFileHandler.create().openExternalStorageFileOutputStream(filename()));
+//            out = DroidScriptIO.create().openExternalStorageFileOutputStream(filename()));
 //            bitmap.compress(Bitmap.CompressFormat.PNG, 90, out); } 
 //        catch (error) {
 //            showToast("Could not save image"); }

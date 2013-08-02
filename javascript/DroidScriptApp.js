@@ -22,7 +22,7 @@
 
 // Short names for Java classes
 var Droid = Packages.comikit.droidscript.Droid;
-var DroidScriptFileHandler = Packages.comikit.droidscript.DroidScriptFileHandler;
+var DroidScriptIO = Packages.comikit.droidscript.DroidScriptIO;
 var AlertDialog = Packages.android.app.AlertDialog;
 var DialogInterface = Packages.anroid.content.DialogInterface;
 var EditText = Packages.android.widget.EditText;
@@ -47,7 +47,7 @@ function onCreate(icicle)
 {
     // An example script that can both be evaluated and run
     // as an activity.
-    var script = DroidScriptFileHandler.create()
+    var script = DroidScriptIO.create()
         .readStringFromFileOrUrl("droidscript/Hello.js");
     var editor = new EditText(Activity);
     editor.setLayoutParams(new LayoutParams(
@@ -77,7 +77,7 @@ function onCreate(icicle)
     buttonRunAsActivity.setLayoutParams(new LayoutParams(
         LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
     buttonRunAsActivity.setText(Droid.translate("RUN_AS_ACTIVITY"));
-    buttonRunAsActivity.setOnClickListener(function () { 
+    buttonRunAsActivity.setOnClickListener(function () {
         var intent = new Intent();
         intent.setClassName(Activity, "comikit.droidscript.DroidScriptActivity");
         intent.putExtra("Script", editor.getText().toString());
@@ -126,8 +126,11 @@ function onPrepareOptionsMenu(menu)
 {
     OptionsMenuItems = 
         [[Droid.translate("OPEN_SCRIPT"), function() { openScriptDialog(); }],
-         ["Colors app", function() { openScript("droidscript/Colors.js"); showToast("Press Run Activity"); }],
-         ["Paint app", function() { openScript("droidscript/Paint.js"); showToast("Press Run Activity"); }],
+         ["Colors", function() { openScript("droidscript/Colors.js"); showToast("Press Run Activity"); }],
+         ["Paint", function() { openScript("droidscript/Paint.js"); showToast("Press Run Activity"); }],
+         ["WebApp Demo", function() { openScript("droidscript/WebAppSample.js"); showToast("Press Run Activity"); }],
+         ["Camera Demo", function() { openScript("droidscript/CameraPreview.js"); showToast("Press Run Activity"); }],
+         ["Toast", function() { openScript("droidscript/Toast.js"); showToast("Press Run Activity"); }],
 //         ["Comics", function() { openScript("droidscript/ComicsDemoActivity.js"); showToast("Press Run Activity"); }],
          [Droid.translate("BE_KIND"), function() { showToast(Droid.translate("BE_KIND_MESSAGE")); }],
          [Droid.translate("UPDATE_APP_SCRIPTS"), function() { updateApplicationScripts(); }],
@@ -186,7 +189,7 @@ function openScriptDialog()
 function openScript(scriptFileName)
 {
     var DroidScriptActivity = Packages.comikit.droidscript.DroidScriptActivity;
-    var script = DroidScriptFileHandler.create().readStringFromFileOrUrl(scriptFileName);
+    var script = DroidScriptIO.create().readStringFromFileOrUrl(scriptFileName);
     Editor.setText(DroidScriptActivity.extractCodeFromDroidScriptTags(script));
 }
 

@@ -1,0 +1,56 @@
+/**
+ * Layout style sheet definitions.
+ *
+ * JQuery layout plugin: 
+ *     http://layout.jquery-dev.net/
+ *
+ * Download a more comprehensive stylesheet here:
+ *     http://layout.jquery-dev.net/demos/css/layout-default.css
+ */
+
+.ui-layout-pane {
+    background: #FFF; 
+    border: 1px solid #BBB;
+    padding: 0px; 
+    overflow: auto;
+} 
+
+.ui-layout-resizer {
+    background: #EEEEEE; 
+} 
+
+.ui-layout-toggler {
+    background: #999999; 
+} 
+
+#toolbar {
+    color: #111111;
+    background: #EEEEEE;
+    /* border: 1px solid #BBB; */
+    border-bottom-style:solid;
+    border-bottom-width:1px;
+    border-bottom-color:#BBB;
+    padding: 5px 5px 5px 5px; 
+    font-size: 0.8em; 
+    font-family: Verdana, Helvetica, sans-serif;
+}
+
+#codearea {
+    padding: 0px; 
+}
+
+#resultarea {
+    padding: 0px; 
+    height: 8em;
+}
+
+body {
+}
+
+button {
+    line-height: normal;
+}
+
+a {
+    color: #111111;
+}

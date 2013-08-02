@@ -1,0 +1,249 @@
+<html>
+<head>
+<title>JavaScript Live Editor</title>
+<link rel="stylesheet" type="text/css" href="styles.css" />
+<!-- <link rel="stylesheet" type="text/css" href="CodeMirror/css/docs.css" /> -->
+<!-- <script src="closure-library-read-only/closure/goog/base.js"></script> -->
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="CodeMirror/js/codemirror.js" type="text/javascript"></script>                                                              
+<script type="text/javascript">
+goog.require("goog.dom");
+goog.require("goog.events");
+
+function main() 
+{
+    var $ = goog.dom.getElement;
+    
+    var editor = CodeMirror.fromTextArea("code", 
+    {
+        parserfile: ["tokenizejavascript.js", "parsejavascript.js"],
+        path: "CodeMirror/js/",
+        stylesheet: "CodeMirror/css/jscolors.css",
+        height: "400px",
+        indentUnit: 4,
+        autoMatchParens: true
+        // lineNumbers: true
+    });
+    
+    var result = CodeMirror.fromTextArea("result",
+    {
+        parserfile: ["tokenizejavascript.js", "parsejavascript.js"],
+        path: "CodeMirror/js/",
+        stylesheet: "CodeMirror/css/jscolors.css",
+        height: "120px"
+    });    
+
+    goog.events.listen($("buttonEvalInBrowser"), goog.events.EventType.CLICK, function() 
+    {
+        try {
+            var code = editor.selection();
+            var res = eval(code);
+            showResult(res); }
+        catch (error) {
+             showResult("{*.*} " + error); }
+    });
+    
+    goog.events.listen($("buttonIndentSelection"), goog.events.EventType.CLICK, function() 
+    {
+        editor.reindentSelection(); 
+    });
+    
+    goog.events.listen($("buttonUndo"), goog.events.EventType.CLICK, function() 
+    {
+        editor.undo(); 
+    });
+
+    goog.events.listen($("buttonRedo"), goog.events.EventType.CLICK, function() 
+    {
+        editor.redo(); 
+    });
+    
+    goog.events.listen($("buttonClearResult"), goog.events.EventType.CLICK, function() 
+    {
+        result.setCode(""); 
+    });
+
+    function showResult(res)
+    {
+        result.setCode(res + "\n" + result.getCode()); 
+    }
+}
+</script> 
+</head>
+
+<body style="padding: 20px; background: #3767A5;">
+
+<div style="padding: 0px 0px 10px 0px; font-size: 1.3em; font-weight: bold; color: #FFCC00; font-family: Trebuchet MS, Verdana, Helvetica, sans-serif;">
+<img src="JavaScriptLiveEditor.png" width="500px" height="70px"/>
+</div>
+
+<script type="text/javascript">
+</script>
+
+<div class="border">
+<textarea id="code">
+// ***************************************************************
+// *******  Welcome to the Wonderful World of JavaScript!  *******
+// ***************************************************************
+// 
+// This is a JavaScript editor where you can evaluate code directly 
+// in the browser, and instantly see the result. Select the code
+// you want to run and click the Evaluate button.
+//
+// Tested in Firefox 3.5
+
+// Select and evaluate, the result is shown below.
+1 + 2
+
+// Select both lines and evaluate, result of last line is shown.
+// (You cannot evaluate this one line at a time.)
+function twice(n) { return n * 2; };
+twice(22);
+
+// Each evaluation takes place in its own scope; the scope is
+// lost when the evaluation returns. To make variables persistent
+// they must be defined in the global scope. The following can be
+// evaluated one line at a time.
+twice = function(n) { return n * 2; };
+twice(22);
+
+// This page includes the Google Closure base library.  Here is
+// something to try. Then look at the bottom of the document.
+hello = goog.dom.createDom(
+    "h1", 
+    { "style": "background-color:#FFEE00" },
+    "Hello World!");
+goog.dom.appendChild(document.body, hello);
+
+// Remove the text.
+goog.dom.removeNode(hello);
+
+// This page includes Closure modules goog.dom and goog.events.
+// To be able to load additional modules interactively in the
+// browser we must first tweak Closure a bit. Evaluate this code.
+goog.mikiWriteScriptTag = function(scriptPath)
+{
+    var scriptTag = document.createElement("script");
+    scriptTag.setAttribute("type","text/javascript");
+    scriptTag.setAttribute("src", scriptPath);
+    document.getElementsByTagName("head")[0].appendChild(scriptTag);
+};
+goog.writeScriptTag_ = function(src) 
+{
+    if (goog.inHtmlDocument_() && !goog.dependencies_.written[src]) 
+    {
+        goog.dependencies_.written[src] = true;
+        // New code:
+        goog.mikiWriteScriptTag(src);
+        // Original code:
+        // var doc = goog.global.document;
+        // doc.write('<script type="text/javascript" src="' +
+        //          src + '"></' + 'script>');
+    }
+};
+
+// Now we can include the module we want. This line must be
+// evaluated individually for the module to have time to load!
+goog.require("goog.graphics");
+
+// Create a canvas to draw on.
+mikiCanvas = new goog.graphics.CanvasGraphics(300, 300);
+
+// Make the canvas appear (at the bottom of the page).
+mikiCanvas.render();
+
+// Draw a filled rectangle.
+mikiCanvas.drawRect(
+    10, 10, 280, 280,
+    new goog.graphics.Stroke(2, "red"),
+    new goog.graphics.SolidFill("yellow"));
+    
+// Set the cursor for the canvas.
+mikiCanvas.getElement().style.cursor = "pointer";
+
+// Move the canvas to an absolute position.
+mikiCanvas.getElement().style.position = "absolute";
+mikiCanvas.getElement().style.left = "500px";
+mikiCanvas.getElement().style.top = "100px";
+
+// Add an event listener.
+goog.events.listen(
+    mikiCanvas.getElement(),
+    goog.events.EventType.MOUSEDOWN,
+    function(event)
+    {
+        alert(
+            "You clicked at: " 
+            + event.offsetX 
+            + ", " 
+            + event.offsetY) ;
+    });
+
+// Remove event listener.
+goog.events.removeAll(mikiCanvas.getElement());
+
+// Define some stuff to make a sketch editor.
+mikiMouseDown = false;
+
+mikiDrawBrush = function(canvas, x, y) {
+    canvas.drawEllipse(
+        x - 10, 
+        y - 10, 
+        20, 
+        20, 
+        new goog.graphics.Stroke(1, "black"),
+        new goog.graphics.SolidFill("white")); 
+};
+
+// Define the events for the editor.
+goog.events.listen(
+    mikiCanvas.getElement(),
+    goog.events.EventType.MOUSEDOWN,
+    function(event) { 
+        mikiMouseDown = true;
+        mikiDrawBrush(mikiCanvas, event.offsetX, event.offsetY); });
+goog.events.listen(
+    mikiCanvas.getElement(),
+    goog.events.EventType.MOUSEMOVE,
+    function(event) { 
+        if (mikiMouseDown) {
+            mikiDrawBrush(mikiCanvas, event.offsetX, event.offsetY); } }); 
+goog.events.listen(
+    mikiCanvas.getElement(),
+    goog.events.EventType.MOUSEUP,
+    function(event) { 
+        mikiMouseDown = false; });
+
+// Remove the canvas from the document.
+goog.dom.removeNode(mikiCanvas.getElement());
+
+// That's all for now! ;-)
+</textarea>
+</div>
+
+<div style="padding: 3px 0px;">
+<input value="Evaluate selection" id="buttonEvalInBrowser" type="button" />
+<input value="Indent selection" id="buttonIndentSelection" type="button" />
+<input value="Undo" id="buttonUndo" type="button" />
+<input value="Redo" id="buttonRedo" type="button" />
+<input value="Clear result area" id="buttonClearResult" type="button" />
+</div>
+
+<div class="border"">
+<textarea id="result" >
+Result area.
+</textarea>
+</div>
+
+<div style="padding: 10px 0px 20px 0px; font-size: 1.0em; font-weight: bold; color: #FFCC00; font-family: Trebuchet MS, Verdana, Helvetica, sans-serif;">
+Copyright (c) 2010 Mikael Kindborg 
+| Source code license: MIT 
+| Contact: <a style="color: #FFCC00;" href="http://twitter.com/divineprog" target="_blank">twitter.com/divineprog</a>
+</div>
+
+<script>
+main();
+</script>
+
+</body>
+</html>

@@ -56,7 +56,7 @@ public class DroidScriptApp extends DroidScriptActivity
         {
             String droidScriptDirectory = "droidscript";
             
-            DroidScriptFileHandler handler = DroidScriptFileHandler.create(); 
+            DroidScriptIO handler = DroidScriptIO.create(); 
             
             // Create the droidscript directory if it does not exist.
             if (!handler.externalStorageFileExists(droidScriptDirectory))
@@ -86,10 +86,10 @@ public class DroidScriptApp extends DroidScriptActivity
     {
         try
         {
-            DroidScriptFileHandler handler = DroidScriptFileHandler.create();
+        	DroidScriptIO io = DroidScriptIO.create();
             for (String[] entry : applicationFiles())
             {
-                handler.installFile(entry[0], entry[1]);
+                io.installFile(entry[0], entry[1]);
             }
         } 
         catch (Exception e)

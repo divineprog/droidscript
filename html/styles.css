@@ -1,0 +1,80 @@
+body {
+  margin: 0;
+  padding: 1em 1em;
+  color: black;
+  /* padding: 20px; */
+  background: #3767A5;
+}
+
+a {
+  color: #FFAA00;
+}
+
+div.text  {
+  font-size: 1.0em; 
+  font-weight: bold; 
+  color: #FFAA00; 
+  font-family: Trebuchet MS, Verdana, Helvetica, sans-serif;
+}
+ 
+div.border {
+  background: #FFFFFF;
+  border: 1px solid black;
+  padding: 3px;
+  -moz-border-radius:6px;
+  -webkit-border-radius:6px;
+  -opera-border-radius:6px;
+  -khtml-border-radius:6px;
+  border-radius:6px;
+}
+
+#header {
+  font-size: 1.3em; 
+  padding: 0px 0px 10px 0px; 
+}
+
+#ipaddress {
+  color: #101010; 
+  font-size: 0.8em; 
+  font-family: Verdana, Helvetica, sans-serif;
+  margin: 0px 0px 5px 0px; 
+  padding: 5px 5px
+}
+
+#codearea {
+  height: 80%;
+}
+
+#resultarea {
+  height: 10em;
+}
+
+#buttonbar {
+  padding: 3px 0px;
+}
+
+#contact {
+  padding: 10px 0px 10px 0px;
+}
+    
+#download {
+  padding: 0px 0px 10px 0px;
+}
+
+code {
+  font-family: courier, monospace;
+  font-size: 90%;
+  color: #144;
+}
+
+pre.code {
+  margin: 1.1em 12px;
+  border: 1px solid #CCCCCC;
+  color: black;
+  padding: .4em;
+  font-family: courier, monospace;
+}
+
+.warn {
+  color: #C00;
+}

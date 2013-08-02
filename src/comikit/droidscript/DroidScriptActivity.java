@@ -56,24 +56,23 @@ public class DroidScriptActivity extends Activity
         Intent intent = getIntent();
         if (null != intent)
         {
-            String filenameOrUrl = intent.getStringExtra("ScriptName");
+            String scriptFilenameOrUrl = intent.getStringExtra("ScriptName");
+            String scriptAssetFilName = intent.getStringExtra("ScriptAsset");
             String script = intent.getStringExtra("Script");
-			String scriptAssetFilName = intent.getStringExtra("ScriptAsset");
-			
-            if (null != filenameOrUrl) 
+            if (null != scriptFilenameOrUrl) 
             {   
-                setScriptFileName(filenameOrUrl);
-                evalFileOrUrl(filenameOrUrl);
+                setScriptFileName(scriptFilenameOrUrl);
+                evalFileOrUrl(scriptFilenameOrUrl);
             }
-			else
-			if (null != scriptAssetFilName) 
-			{   
-				evalAssetFile(scriptAssetFilName);
-			}
+            else
+            if (null != scriptAssetFilName) 
+            {   
+                evalAssetFile(scriptAssetFilName);
+            }
             else
             if (null != script) 
             {   
-                eval(script, filenameOrUrl);
+                eval(script, scriptFilenameOrUrl);
             }
         }
         
@@ -189,28 +188,10 @@ public class DroidScriptActivity extends Activity
         try 
         {
             return eval(
-                DroidScriptFileHandler.create().readStringFromApplicationFile(this, fileName), 
+                DroidScriptIO.create().readStringFromApplicationFile(this, fileName), 
                 fileName);
         }
         catch (Throwable e) 
-        {
-            reportError(e);
-            return null;
-        }
-    }
-
-	/**
-     * Run a script stored as an asset.
-     */
-    public Object evalAssetFile(final String scriptName)  
-    {
-        try
-        {
-            return eval(
-                DroidScriptIO.create().readStringFromAssetFile(this, scriptName), 
-                scriptName);
-        }
-        catch (Throwable e)
         {
             reportError(e);
             return null;
@@ -225,7 +206,7 @@ public class DroidScriptActivity extends Activity
         try
         {
             return eval(
-                DroidScriptFileHandler.create().readStringFromFileOrUrl(filenameOrUrl), 
+            		DroidScriptIO.create().readStringFromFileOrUrl(filenameOrUrl), 
                 filenameOrUrl);
         }
         catch (Throwable e)
@@ -235,6 +216,24 @@ public class DroidScriptActivity extends Activity
         }
     }
 
+    /**
+     * Run a script stored as an asset.
+     */
+    public Object evalAssetFile(final String scriptName)  
+    {
+        try
+        {
+            return eval(
+            		DroidScriptIO.create().readStringFromAssetFile(this, scriptName), 
+                scriptName);
+        }
+        catch (Throwable e)
+        {
+            reportError(e);
+            return null;
+        }
+    }
+    
     public Object eval(final String code)
     {
         return eval(code, "");
