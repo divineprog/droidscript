@@ -1,22 +1,18 @@
-Copyright (c) 2009-2010 Mikael Kindborg mikael.kindborg@gmail.com
+Copyright (c) 2009-2013 Mikael Kindborg mikael.kindborg@gmail.com
 Source code license: MIT
+
+Update August 2, 2013: I have started updating droidscript to recent Android versions, and added source files for HTML editor that connects to a device running the app.
+
 
 DroidScript - JavaScript for Android! :-)
 
-The project is experimental!
+The project is experimental! 
 
-DroidScript (formerly called RhinoDroid) is a JavaScript programming tool for Android.
-It is a tool for building full Android applications.
+DroidScript is a JavaScript programming tool for Android. It is a tool for building full Android applications. It is based on the Mozilla Rhino JavaScript implementation.
 
-It is based on the Mozilla Rhino JavaScript implementation (which is why it was first 
-called RhinoDroid).
+The DroidScript application allows both editing and running programs on a device, and will add remote coding using a web application. The application contains a tiny web server that accepts HTTP PUT-requests with JavaScript code as its body.
 
-The DroidScript application allows both editing and running programs on a device, 
-and will add remote coding using a web application. The application contains a tiny 
-web server that accepts HTTP PUT-requests with JavaScript code as its body.
-
-At http://droidscript.se there is a live editor you can use to interactively author
-and experiment with JavaScript on a device or on the emulator.
+At http://droidscript.se there is a live editor you can use to interactively author and experiment with JavaScript on a device or on the emulator.
 
 To-do list:
 - More stable error handling -> Improved! Now errors are catched more 
@@ -37,10 +33,9 @@ To-do list:
 
 How To Get Started
 
-The quick-start is to go to http://droidscript.se and follow instructions 
-on the web page. 
+The quick-start is to go to checkout the project and open the file html/droidscript-editor.html in a browser and follow instructions on that page. 
 
-There is  a blog at http://droidscript.blogspot.com that has updates and posts
+There is a blog at http://droidscript.blogspot.com that has updates and posts
 related to DroidScript. Here you will find download information.
 
 On startup, the app reads a JavaScript file: 
@@ -65,7 +60,6 @@ Copy JavaScript files to device/emulator with shell script: ./copyjs.sh
 
 Have fun!
 
-Big thanks to the Mozilla Rhino developers, Brice Lambson for putting Rhino
-on Android, and to Marijn Haverbeke, developer of the CodeMirror editor.
+Big thanks to the Mozilla Rhino developers, Brice Lambson for putting Rhino on Android, and to Marijn Haverbeke, developer of the CodeMirror editor.
 
 Best regards, Mikael Kindborg (^_^)
