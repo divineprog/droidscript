@@ -3,16 +3,15 @@ Source code license: MIT
 
 Update August 2, 2013: I have started updating droidscript to recent Android versions, and added source files for HTML editor that connects to a device running the app.
 
-
 DroidScript - JavaScript for Android! :-)
 
-The project is experimental! 
+The project is experimental. Not even sure it builds right now! (2013 update in progress)
 
 DroidScript is a JavaScript programming tool for Android. It is a tool for building full Android applications. It is based on the Mozilla Rhino JavaScript implementation.
 
 The DroidScript application allows both editing and running programs on a device, and will add remote coding using a web application. The application contains a tiny web server that accepts HTTP PUT-requests with JavaScript code as its body.
 
-At http://droidscript.se there is a live editor you can use to interactively author and experiment with JavaScript on a device or on the emulator.
+In folder html/droidscript-editor.html there is a live editor you can use to interactively author and experiment with JavaScript on a device or on the emulator.
 
 To-do list:
 - More stable error handling -> Improved! Now errors are catched more 
